@@ -8,19 +8,12 @@
     "require": {
         "php": "^8.2",
         "laravel/framework": "^12.0",
-<<<<<<< HEAD
-        "laravel/tinker": "^2.10.1"
-    },
-    "require-dev": {
-        "fakerphp/faker": "^1.23",
-=======
         "laravel/tinker": "^2.10.1",
         "nwidart/laravel-modules": "^12.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
         "laravel/boost": "^1.8",
->>>>>>> 2c4bfea (remove large file)
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.24",
         "laravel/sail": "^1.41",
@@ -79,12 +72,8 @@
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true,
-<<<<<<< HEAD
-            "php-http/discovery": true
-=======
             "php-http/discovery": true,
             "wikimedia/composer-merge-plugin": true
->>>>>>> 2c4bfea (remove large file)
         }
     },
     "minimum-stability": "stable",
