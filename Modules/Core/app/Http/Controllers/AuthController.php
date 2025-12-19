@@ -9,10 +9,10 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-     public function showLogin()
+    public function showLogin()
     {
         if (Auth::check()) {
-            return redirect()->route('core.index');
+            return redirect()->route('dashboard');
         }
         return view('core::auth.login');
     }
@@ -26,7 +26,7 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended(route('core.index'));
+            return redirect()->intended(route('dashboard'));
         }
 
         throw ValidationException::withMessages([

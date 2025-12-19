@@ -5,16 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Connexion | {{ config('app.name') }}</title>
 
-    {{-- <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback"> --}}
     <link rel="stylesheet" href="{{ asset('plugins/fontawesome/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('plugins/icheck-bootstrap/icheck-bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('adminlte/css/adminlte.css') }}">
 </head>
-<body class="hold-transition login-page">
+<body class="login-page bg-body-secondary">
 <div class="login-box">
     <div class="card card-outline card-primary">
         <div class="card-header text-center">
-            <a href="#" class="h1"><b>Admin</b>LTE</a>
+            <a href="#" class="h1"><b>CHU-YO</b></a>
         </div>
         <div class="card-body">
             <p class="login-box-msg">Connectez-vous pour ouvrir votre session</p>
@@ -23,25 +22,27 @@
                 @csrf
                 <div class="input-group mb-3">
                     <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" placeholder="Email" value="{{ old('email') }}" required autofocus>
-                    <div class="input-group-append">
-                        <div class="input-group-text"><span class="fas fa-envelope"></span></div>
+                    <div class="input-group-text">
+                        <span class="fas fa-envelope"></span>
                     </div>
                     @error('email')
-                        <span class="invalid-feedback">{{ $message }}</span>
+                        <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
-                <div class="input-group mb-3">
-                    <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" placeholder="Mot de passe" required>
-                    <div class="input-group-append">
-                        <div class="input-group-text"><span class="fas fa-lock"></span></div>
+                <div class="input-group mb-3 card-password">
+                    <input type="password" name="password" id="password" class="form-control @error('password') is-invalid @enderror" placeholder="Mot de passe" required>
+                    <div class="input-group-text" style="cursor: pointer;" id="togglePassword">
+                        <span class="fas fa-eye"></span>
                     </div>
-                    @error('password')
-                        <span class="invalid-feedback">{{ $message }}</span>
+                     @error('password')
+                        <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
                 <div class="row"> 
-                    <div class="col-4">
-                        <button type="submit" class="btn btn-primary btn-block">Connexion</button>
+                    <div class="col-12">
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Connexion</button>
+                        </div>
                     </div>
                 </div>
             </form>
@@ -52,5 +53,28 @@
 <script src="{{ asset('plugins/jquery/jquery-3.7.1.js') }}"></script>
 <script src="{{ asset('plugins/bootstrap/js/bootstrap.bundle.js') }}"></script>
 <script src="{{ asset('adminlte/js/adminlte.js') }}"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const togglePassword = document.querySelector('#togglePassword');
+        const password = document.querySelector('#password');
+        const icon = togglePassword.querySelector('span');
+
+        togglePassword.addEventListener('click', function (e) {
+            // toggle the type attribute
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            
+            // toggle the eye slash icon
+            if (type === 'text') {
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+</script>
 </body>
 </html>

@@ -35,7 +35,7 @@ class SeedPermissionsTableSeeder extends Seeder
             ['email' => 'admin@admin.com'],
             [
                 'name' => 'Administrateur',
-                'password' => bcrypt('password'),
+                'password' => bcrypt('azerty'),
             ]
         );
         $admin->assignRole($roleAdmin);
