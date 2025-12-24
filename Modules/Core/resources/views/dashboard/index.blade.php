@@ -2,6 +2,11 @@
 
 @section('header', 'Dashboard')
 
+@section('breadcrumb')
+    <li class="breadcrumb-item"><a href="#">Accueil</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+@endsection
+
 @section('content')
     <!--begin::Row-->
     <div class="row">
@@ -420,16 +425,12 @@
     <!-- jsvectormap -->
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/jsvectormap@1.5.3/dist/css/jsvectormap.min.css"
-      integrity="sha256-+uGLJmmTKOqBr+2E6KDYs/NRsHxSkONXFHUL0fy2O/4="
-      crossorigin="anonymous"
+      href="{{ asset('plugins/jsvectormap/css/jsvectormap.min.css') }}"
     />
     <!-- apexcharts -->
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/apexcharts@3.37.1/dist/apexcharts.css"
-      integrity="sha256-4MX+61mt9NVvvuPjUWdUdyfZfxSB1/Rf9WtqRHgG5S0="
-      crossorigin="anonymous"
+      href="{{ asset('plugins/apexcharts/apexcharts.css') }}"
     />
 @endpush
 
@@ -437,8 +438,7 @@
     <!-- OPTIONAL SCRIPTS -->
     <!-- sortablejs -->
     <script
-      src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"
-      crossorigin="anonymous"
+      src="{{ asset('plugins/sortablejs/Sortable.min.js') }}"
     ></script>
     <!-- sortablejs -->
     <script>
@@ -454,9 +454,7 @@
     </script>
     <!-- apexcharts -->
     <script
-      src="https://cdn.jsdelivr.net/npm/apexcharts@3.37.1/dist/apexcharts.min.js"
-      integrity="sha256-+vh8GkaU7C9/wbSLIcwq82tQ2wTf44aOHA8HlBMwRI8="
-      crossorigin="anonymous"
+      src="{{ asset('plugins/apexcharts/apexcharts.min.js') }}"
     ></script>
     <!-- ChartJS -->
     <script>
@@ -519,14 +517,10 @@
     </script>
     <!-- jsvectormap -->
     <script
-      src="https://cdn.jsdelivr.net/npm/jsvectormap@1.5.3/dist/js/jsvectormap.min.js"
-      integrity="sha256-/t1nN2956BT869E6H4V1dnt0X5pAQHPytli+1nTZm2Y="
-      crossorigin="anonymous"
+      src="{{ asset('plugins/jsvectormap/js/jsvectormap.min.js') }}"
     ></script>
     <script
-      src="https://cdn.jsdelivr.net/npm/jsvectormap@1.5.3/dist/maps/world.js"
-      integrity="sha256-XPpPaZlU8S/HWf7FZLAncLg2SAkP8ScUTII89x9D3lY="
-      crossorigin="anonymous"
+      src="{{ asset('plugins/jsvectormap/maps/world.js') }}"
     ></script>
     <!-- jsvectormap -->
     <script>
