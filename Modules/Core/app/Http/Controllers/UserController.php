@@ -1,0 +1,285 @@
+<?php
+ namespace Modules\Core\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use Modules\Core\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+
+class UserController extends Controller
+{
+    /**
+     * Afficher la liste des utilisateurs
+     */
+    public function index()
+    {
+        return view('core::users.index');
+    }
+
+    /**
+     * Récupérer les données pour Bootstrap Table (AJAX)
+     */
+    public function getData(Request $request)
+    {
+        $query = User::query();
+
+        // Recherche
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('user_name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('service', 'like', "%{$search}%");
+            });
+        }
+
+        // Tri
+        $sortBy = $request->get('sort', 'id');
+        $sortOrder = $request->get('order', 'asc');
+        $query->orderBy($sortBy, $sortOrder);
+
+        // Pagination
+        $limit = $request->get('limit', 10);
+        $offset = $request->get('offset', 0);
+
+        $total = $query->count();
+        $users = $query->offset($offset)->limit($limit)->get();
+
+        return response()->json([
+            'total' => $total,
+            'rows' => $users
+        ]);
+    }
+
+    /**
+     * Récupérer un utilisateur (pour édition)
+     */
+    public function show($id)
+    {
+        try {
+            $user = User::findOrFail($id);
+            return response()->json([
+                'success' => true,
+                'data' => $user
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Utilisateur non trouvé'
+            ], 404);
+        }
+    }
+
+    /**
+     * Créer un nouvel utilisateur
+     */
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'user_name' => 'required|string|max:255|unique:cores_users,user_name',
+            'email' => 'required|email|unique:cores_users,email',
+            'service' => 'nullable|string|max:255',
+            'password' => 'required|string|min:8|confirmed',
+        ], [
+            'name.required' => 'Le prénom est obligatoire',
+            'last_name.required' => 'Le nom est obligatoire',
+            'user_name.required' => "Le nom d'utilisateur est obligatoire",
+            'user_name.unique' => "Ce nom d'utilisateur existe déjà",
+            'email.required' => "L'email est obligatoire",
+            'email.email' => "L'email doit être valide",
+            'email.unique' => 'Cet email existe déjà',
+            'password.required' => 'Le mot de passe est obligatoire',
+            'password.min' => 'Le mot de passe doit contenir au moins 8 caractères',
+            'password.confirmed' => 'Les mots de passe ne correspondent pas',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $user = User::create([
+                'name' => $request->name,
+                'last_name' => $request->last_name,
+                'user_name' => $request->user_name,
+                'email' => $request->email,
+                'service' => $request->service,
+                'password' => Hash::make($request->password),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Utilisateur créé avec succès',
+                'data' => $user
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la création : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Mettre à jour un utilisateur
+     */
+    public function update(Request $request, $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'last_name' => 'required|string|max:255',
+                'user_name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('cores_users', 'user_name')->ignore($user->id)
+                ],
+                'email' => [
+                    'required',
+                    'email',
+                    Rule::unique('cores_users', 'email')->ignore($user->id)
+                ],
+                'service' => 'nullable|string|max:255',
+                'password' => 'nullable|string|min:8|confirmed',
+            ], [
+                'name.required' => 'Le prénom est obligatoire',
+                'last_name.required' => 'Le nom est obligatoire',
+                'user_name.required' => "Le nom d'utilisateur est obligatoire",
+                'user_name.unique' => "Ce nom d'utilisateur existe déjà",
+                'email.required' => "L'email est obligatoire",
+                'email.email' => "L'email doit être valide",
+                'email.unique' => 'Cet email existe déjà',
+                'password.min' => 'Le mot de passe doit contenir au moins 8 caractères',
+                'password.confirmed' => 'Les mots de passe ne correspondent pas',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $user->name = $request->name;
+            $user->last_name = $request->last_name;
+            $user->user_name = $request->user_name;
+            $user->email = $request->email;
+            $user->service = $request->service;
+
+            // Mettre à jour le mot de passe seulement s'il est fourni
+            if ($request->filled('password')) {
+                $user->password = Hash::make($request->password);
+            }
+
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Utilisateur modifié avec succès',
+                'data' => $user
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la modification : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Supprimer un utilisateur
+     */
+    public function destroy($id)
+    {
+        try {
+            $user = User::findOrFail($id);
+            
+            // Empêcher la suppression de son propre compte
+            if ($user->id === auth()->id()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vous ne pouvez pas supprimer votre propre compte'
+                ], 403);
+            }
+
+            $user->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Utilisateur supprimé avec succès'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la suppression : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    /**
+     * Réinitialiser le mot de passe
+     */
+    public function resetPassword($id)
+    {
+        try {
+            $user = User::findOrFail($id);
+            $newPassword = 'password'; // Default password
+            $user->password = Hash::make($newPassword);
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Mot de passe réinitialisé à : ' . $newPassword
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Activer/Désactiver un utilisateur
+     */
+    public function toggleStatus($id)
+    {
+        try {
+            $user = User::findOrFail($id);
+            
+            if ($user->id === auth()->id()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vous ne pouvez pas modifier le statut de votre propre compte'
+                ], 403);
+            }
+
+            $user->is_active = !$user->is_active;
+            $user->save();
+
+            $status = $user->is_active ? 'activé' : 'désactivé';
+
+            return response()->json([
+                'success' => true,
+                'message' => "Utilisateur $status avec succès",
+                'is_active' => $user->is_active
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+}

@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
   <!--begin::Head-->
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>@yield('title', 'AdminLTE v4 | Dashboard')</title>
+    <title>@yield('title', 'CHU-YO-KEYSTONE')</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <!--begin::Accessibility Meta Tags-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
     <meta name="color-scheme" content="light dark" />
@@ -11,15 +12,15 @@
     <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)" />
     <!--end::Accessibility Meta Tags-->
     <!--begin::Primary Meta Tags-->
-    <meta name="title" content="AdminLTE v4 | Dashboard" />
-    <meta name="author" content="ColorlibHQ" />
+    <meta name="title" content="CHU-YO-KEYSTONE" />
+    <meta name="author" content="ibrahim" />
     <meta
       name="description"
-      content="AdminLTE is a Free Bootstrap 5 Admin Dashboard, 30 example pages using Vanilla JS. Fully accessible with WCAG 2.1 AA compliance."
+      content="CHU-YO-KEYSTONE"
     />
     <meta
       name="keywords"
-      content="bootstrap 5, bootstrap, bootstrap 5 admin dashboard, bootstrap 5 dashboard, bootstrap 5 charts, bootstrap 5 calendar, bootstrap 5 datepicker, bootstrap 5 tables, bootstrap 5 datatable, vanilla js datatable, colorlibhq, colorlibhq dashboard, colorlibhq admin dashboard, accessible admin panel, WCAG compliant"
+      content="CHU-YO-KEYSTONE"
     />
     <!--end::Primary Meta Tags-->
     <!--begin::Accessibility Features-->
@@ -44,6 +45,18 @@
       href="{{ asset('plugins/bootstrap-icons/font/bootstrap-icons.min.css') }}"
     />
     <!--end::Third Party Plugin(Bootstrap Icons)-->
+    <!--begin::Third Party Plugin(font-awesome)-->
+    <link
+      rel="stylesheet"
+        href="{{ asset('plugins/fontawesome/css/all.min.css') }}"
+    />
+    <!--end::Third Party Plugin(sweetalert2)-->
+    <!--begin::Third Party Plugin(sweetalert2)-->
+    <link
+      rel="stylesheet"
+        href="{{ asset('plugins/sweetalert2/sweetalert2.css') }}"
+    />
+    <!--end::Third Party Plugin(sweetalert2)-->
     <!--begin::Required Plugin(AdminLTE)-->
     <link rel="stylesheet" href="{{ asset('adminlte/css/adminlte.css') }}" />
     <!--end::Required Plugin(AdminLTE)-->
@@ -108,7 +121,11 @@
     </div>
     <!--end::App Wrapper-->
     <!--begin::Script-->
-    <!--begin::Third Party Plugin(OverlayScrollbars)-->
+    <!--begin::Third Party Plugin(jquery)-->
+    <script
+      src="{{ asset('plugins/jquery/jquery-3.7.1.js') }}"
+    ></script>
+    <!--end::Third Party Plugin(jquery)--><!--begin::Third Party Plugin(OverlayScrollbars)-->
     <script
       src="{{ asset('plugins/overlayscrollbars/browser/overlayscrollbars.browser.es6.min.js') }}"
     ></script>
