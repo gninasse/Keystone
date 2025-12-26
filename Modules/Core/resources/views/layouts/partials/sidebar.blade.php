@@ -56,6 +56,12 @@
                       <i class="nav-icon bi bi-circle"></i>
                       <p>Rôles</p>
                     </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="{{ route('cores.permissions.index') }}" class="nav-link">
+                      <i class="nav-icon bi bi-circle"></i>
+                      <p>Permissions</p>
+                    </a>
                   </li> 
                 </ul>
               </li>

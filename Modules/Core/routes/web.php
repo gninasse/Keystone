@@ -6,6 +6,7 @@ use Modules\Core\Http\Controllers\AuthController;
 use Modules\Core\Http\Controllers\DashboardController;
 use Modules\Core\Http\Controllers\UserController;
 use Modules\Core\Http\Controllers\RoleController;
+use Modules\Core\Http\Controllers\PermissionController;
 
 Route::get('login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('login', [AuthController::class, 'login'])->name('login.post');
@@ -36,6 +37,12 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/', [RoleController::class, 'store'])->name('store');
             Route::put('/{id}', [RoleController::class, 'update'])->name('update');
             Route::delete('/{id}', [RoleController::class, 'destroy'])->name('destroy');
+        });
+
+        // Routes pour la gestion des permissions
+        Route::prefix('permissions')->name('permissions.')->group(function () {
+            Route::get('/', [PermissionController::class, 'index'])->name('index');
+            Route::post('/toggle', [PermissionController::class, 'toggle'])->name('toggle');
         });
     });
 });
