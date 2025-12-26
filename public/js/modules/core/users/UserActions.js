@@ -42,7 +42,7 @@ export class UserActions {
 
     editUser(userId) {
         $.ajax({
-            url: route('core.users.show', userId),
+            url: route('cores.users.show', userId),
             method: 'GET',
             success: (response) => {
                 if (response.success) {
@@ -72,7 +72,7 @@ export class UserActions {
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: route('core.users.destroy', userId),
+                    url: route('cores.users.destroy', userId),
                     method: 'DELETE',
                     success: (response) => {
                         if (response.success) {
@@ -110,7 +110,7 @@ export class UserActions {
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: route('core.users.reset-password', userId),
+                    url: route('cores.users.reset-password', userId),
                     method: 'POST',
                     success: (response) => {
                         if (response.success) {
@@ -145,7 +145,7 @@ export class UserActions {
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: route('core.users.toggle-status', userId),
+                    url: route('cores.users.toggle-status', userId),
                     method: 'POST',
                     success: (response) => {
                         if (response.success) {

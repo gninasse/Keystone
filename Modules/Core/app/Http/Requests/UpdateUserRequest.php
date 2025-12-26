@@ -24,12 +24,12 @@ class UpdateUserRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('cores_users', 'user_name')->ignore($userId)
+                Rule::unique('users', 'user_name')->ignore($userId)
             ],
             'email' => [
                 'required',
                 'email',
-                Rule::unique('cores_users', 'email')->ignore($userId)
+                Rule::unique('users', 'email')->ignore($userId)
             ],
             'service' => 'nullable|string|max:255',
             'password' => ['nullable', 'confirmed', Password::min(8)->letters()->mixedCase()->numbers()->symbols()],

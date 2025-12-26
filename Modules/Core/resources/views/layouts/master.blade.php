@@ -128,6 +128,13 @@
     <script
       src="{{ asset('plugins/jquery/jquery-3.7.1.js') }}"
     ></script>
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+    </script>
     <!--end::Third Party Plugin(jquery)--><!--begin::Third Party Plugin(OverlayScrollbars)-->
     <script
       src="{{ asset('plugins/overlayscrollbars/browser/overlayscrollbars.browser.es6.min.js') }}"

@@ -9,7 +9,7 @@
     <!-- Theme style -->
     <link rel="stylesheet" href="{{ asset('adminlte/css/adminlte.min.css') }}"> 
     <link rel="stylesheet" href="{{ asset('plugins/tools/tools.css') }}"> 
-
+    
     <style>
         :root {
             --navy: #001f3f;
@@ -98,7 +98,13 @@
                 </ul>
             </div>
             <ul class="order-1 order-md-3 navbar-nav navbar-no-expand ml-auto">
-                <li class="nav-item"><a href="{{ route('login') }}" class="btn btn-outline-light">Connexion</a></li>
+                <li class="nav-item">
+                    @auth
+                        <a href="{{ route('cores.dashboard') }}" class="btn btn-outline-light">Tableau de Bord</a>
+                    @else
+                        <a href="{{ route('login') }}" class="btn btn-outline-light">Connexion</a>
+                    @endauth
+                </li>
             </ul>
         </div>
     </nav>
@@ -108,7 +114,11 @@
             <div class="container">
                 <h1>Visibilité totale et maîtrise complète de votre parc informatique</h1>
                 <p class="lead">Le module de Gestion de Parc du CHU-YO transforme la manière dont vous gérez vos actifs informatiques, de l'acquisition au retrait, en passant par la maintenance et la conformité.</p>
-                <a href="{{ route('login') }}" class="btn btn-lg btn-success">Connectez-vous</a>
+                @auth
+                    <a href="{{ route('cores.dashboard') }}" class="btn btn-lg btn-success">Accéder au tableau de bord</a>
+                @else
+                    <a href="{{ route('login') }}" class="btn btn-lg btn-success">Connectez-vous</a>
+                @endauth
             </div>
         </div>
 
@@ -147,7 +157,11 @@
             <div class="container">
                 <h2 class="mb-3">Transformons ensemble la gestion de notre parc informatique</h2>
                 <p class="lead mb-4">Vous avez des accès a cette plateforme?</p>
-                <a href="{{ route('login') }}" class="btn btn-lg btn-light"><i class="fas fa-user mr-2"></i>Connectez-vous</a>
+                @auth
+                    <a href="{{ route('cores.dashboard') }}" class="btn btn-lg btn-light"><i class="fas fa-tachometer-alt mr-2"></i>Tableau de bord</a>
+                @else
+                    <a href="{{ route('login') }}" class="btn btn-lg btn-light"><i class="fas fa-user mr-2"></i>Connectez-vous</a>
+                @endauth
             </div>
         </section>
     </div>

@@ -12,29 +12,32 @@ class AuthController extends Controller
     public function showLogin()
     {
         if (Auth::check()) {
-            return redirect()->route('dashboard');
+            return redirect()->route('cores.dashboard');
         }
         return view('core::auth.login');
     }
 
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
+        $request->validate([
+            'login' => ['required', 'string'],
+            'password' => ['required', 'string'],
         ]);
- 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+
+        $login = $request->input('login');
+        $password = $request->input('password');
+
+        $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'user_name';
+
+        if (Auth::attempt([$field => $login, 'password' => $password], $request->boolean('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended(route('dashboard'));
-        }elseif (Auth::attempt(['user_name'=> $request->email,'password'=>$request->password], $request->boolean('remember'))) {
-            $request->session()->regenerate();
-            return redirect()->intended(route('dashboard'));
+            return redirect()->intended(route('cores.dashboard'));
         }
 
-        throw ValidationException::withMessages([
-            'email' => __('auth.failed'),
-        ]);
+        // Return with a generic error message key 'login_error' instead of field-specific errors
+        return back()->withErrors([
+            'login_error' => __('auth.failed'),
+        ])->onlyInput('login');
     }
 
     public function logout(Request $request)

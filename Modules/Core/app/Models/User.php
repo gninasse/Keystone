@@ -11,7 +11,7 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles;
 
-    protected $table = 'cores_users';
+    // protected $table = 'cores_users'; // Removed to use default 'users' table
 
     protected $fillable = [
         'name',

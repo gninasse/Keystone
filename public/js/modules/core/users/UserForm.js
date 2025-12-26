@@ -95,7 +95,7 @@ export class UserForm {
             }
 
             const userId = $('#user_id').val();
-            const url = userId ? route('core.users.update', userId) : route('core.users.store');
+            const url = userId ? route('cores.users.update', userId) : route('cores.users.store');
             const method = userId ? 'PUT' : 'POST';
 
             $.ajax({

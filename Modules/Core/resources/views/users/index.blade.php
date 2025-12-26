@@ -35,7 +35,7 @@
         </div>
         <table id="users-table"
                data-toggle="table"
-               data-url="{{ route('core.users.data') }}"
+               data-url="{{ route('cores.users.data') }}"
                data-pagination="true"
                data-side-pagination="server"
                data-search="true"
@@ -77,4 +77,4 @@
 <script src="{{ asset('plugins/sweetalert2/sweetalert2.min.js') }}"></script>
 
 <script type="module" src="{{ asset('js/modules/core/users/index.js') }}"></script>
-@endpush
+@endpush                     

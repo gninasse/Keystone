@@ -13,7 +13,7 @@
 <div class="login-box">
     <div class="card card-outline card-primary">
         <div class="card-header text-center">
-            <a href="#" class="h1"><b>CHU-YO</b></a>
+            <a href="#" class="h1"><b>KEYSTONE</b></a>
         </div>
         <div class="card-body">
             <p class="login-box-msg">Connectez-vous pour ouvrir votre session</p>
@@ -21,23 +21,24 @@
             <form action="{{ route('login.post') }}" method="post">
                 @csrf
                 <div class="input-group mb-3">
-                    <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" placeholder="Email" value="{{ old('email') }}" required autofocus>
+                    <input type="text" name="login" class="form-control" placeholder="Email ou Nom d'utilisateur" value="{{ old('login') }}" required autofocus>
                     <div class="input-group-text">
                         <span class="fas fa-envelope"></span>
                     </div>
-                    @error('email')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
                 </div>
                 <div class="input-group mb-3 card-password">
-                    <input type="password" name="password" id="password" class="form-control @error('password') is-invalid @enderror" placeholder="Mot de passe" required>
+                    <input type="password" name="password" id="password" class="form-control" placeholder="Mot de passe" required>
                     <div class="input-group-text" style="cursor: pointer;" id="togglePassword">
                         <span class="fas fa-eye"></span>
                     </div>
-                     @error('password')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
                 </div>
+                
+                @error('login_error')
+                    <div class="alert alert-danger text-center">
+                        {{ 'Identifiant ou mot de passe incorrect' }}
+                    </div>
+                @enderror
+
                 <div class="row"> 
                     <div class="col-12">
                         <div class="d-grid gap-2">
