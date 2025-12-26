@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
+use Modules\Core\Http\Requests\StoreUserRequest;
+use Modules\Core\Http\Requests\UpdateUserRequest;
 
 class UserController extends Controller
 {
@@ -77,34 +80,9 @@ class UserController extends Controller
     /**
      * Créer un nouvel utilisateur
      */
-    public function store(Request $request)
+    public function store(StoreUserRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'user_name' => 'required|string|max:255|unique:cores_users,user_name',
-            'email' => 'required|email|unique:cores_users,email',
-            'service' => 'nullable|string|max:255',
-            'password' => 'required|string|min:8|confirmed',
-        ], [
-            'name.required' => 'Le prénom est obligatoire',
-            'last_name.required' => 'Le nom est obligatoire',
-            'user_name.required' => "Le nom d'utilisateur est obligatoire",
-            'user_name.unique' => "Ce nom d'utilisateur existe déjà",
-            'email.required' => "L'email est obligatoire",
-            'email.email' => "L'email doit être valide",
-            'email.unique' => 'Cet email existe déjà',
-            'password.required' => 'Le mot de passe est obligatoire',
-            'password.min' => 'Le mot de passe doit contenir au moins 8 caractères',
-            'password.confirmed' => 'Les mots de passe ne correspondent pas',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
+        // Validation is handled by StoreUserRequest
 
         try {
             $user = User::create([
@@ -132,45 +110,12 @@ class UserController extends Controller
     /**
      * Mettre à jour un utilisateur
      */
-    public function update(Request $request, $id)
+    public function update(UpdateUserRequest $request, $id)
     {
         try {
             $user = User::findOrFail($id);
 
-            $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
-                'last_name' => 'required|string|max:255',
-                'user_name' => [
-                    'required',
-                    'string',
-                    'max:255',
-                    Rule::unique('cores_users', 'user_name')->ignore($user->id)
-                ],
-                'email' => [
-                    'required',
-                    'email',
-                    Rule::unique('cores_users', 'email')->ignore($user->id)
-                ],
-                'service' => 'nullable|string|max:255',
-                'password' => 'nullable|string|min:8|confirmed',
-            ], [
-                'name.required' => 'Le prénom est obligatoire',
-                'last_name.required' => 'Le nom est obligatoire',
-                'user_name.required' => "Le nom d'utilisateur est obligatoire",
-                'user_name.unique' => "Ce nom d'utilisateur existe déjà",
-                'email.required' => "L'email est obligatoire",
-                'email.email' => "L'email doit être valide",
-                'email.unique' => 'Cet email existe déjà',
-                'password.min' => 'Le mot de passe doit contenir au moins 8 caractères',
-                'password.confirmed' => 'Les mots de passe ne correspondent pas',
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
-            }
+            // Validation is handled by UpdateUserRequest
 
             $user->name = $request->name;
             $user->last_name = $request->last_name;
@@ -234,7 +179,7 @@ class UserController extends Controller
     {
         try {
             $user = User::findOrFail($id);
-            $newPassword = 'password'; // Default password
+            $newPassword = config('core.user_default_password', 'password'); // Default password
             $user->password = Hash::make($newPassword);
             $user->save();
 

@@ -60,6 +60,9 @@
     <!--begin::Required Plugin(AdminLTE)-->
     <link rel="stylesheet" href="{{ asset('adminlte/css/adminlte.css') }}" />
     <!--end::Required Plugin(AdminLTE)-->
+    <!--begin::Required Plugin(tools)-->
+    <link rel="stylesheet" href="{{ asset('plugins/tools/tools.css') }}" />
+    <!--end::Required Plugin(tools)-->
     
     @stack('css')
   </head>
@@ -162,6 +165,11 @@
       });
     </script>
     <!--end::OverlayScrollbars Configure-->
+    
+    <!--begin::Ziggy Routes-->
+    <script src="{{ asset('plugins/ziggy/routes.js') }}"></script>
+    <script src="{{ asset('plugins/ziggy/ziggy.js') }}"></script>
+    <!--end::Ziggy Routes-->
     
     @stack('js')
   </body>

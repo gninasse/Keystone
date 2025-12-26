@@ -14,19 +14,19 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="name">Prénom <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="name" name="name" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
                                 <label for="last_name">Nom <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="last_name" name="last_name" required>
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="name">Prénom <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                        </div> 
                     </div>
 
-                    <div class="row">
+                    <div class="row m-t-small">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="user_name">Nom d'utilisateur <span class="text-danger">*</span></label>
@@ -41,7 +41,7 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group m-t-small">
                         <label for="service">Service</label>
                         <input type="text" class="form-control" id="service" name="service">
                     </div>
@@ -54,14 +54,24 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="password">Mot de passe</label>
-                                    <input type="password" class="form-control" id="password" name="password" minlength="8">
-                                    <small class="form-text text-muted">Minimum 8 caractères</small>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" id="password" name="password" minlength="8">
+                                        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="#password">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <small class="form-text text-muted">Min 8 carats, majuscule, minuscule, chiffre, symbole</small>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="password_confirmation">Confirmer le mot de passe</label>
-                                    <input type="password" class="form-control" id="password_confirmation" name="password_confirmation">
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" id="password_confirmation" name="password_confirmation">
+                                        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="#password_confirmation">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
