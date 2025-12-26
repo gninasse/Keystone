@@ -2,14 +2,24 @@
  * Permissions Matrix AJAX Logic
  */
 $(function () {
+    // Search Functionality
+    $('#permission-search').on('keyup', function () {
+        var value = $(this).val().toLowerCase();
+        $("#permissions-table tbody tr.permission-row").filter(function () {
+            // Search in the permission-name cell
+            $(this).toggle($(this).find('.permission-name').text().toLowerCase().indexOf(value) > -1)
+        });
+    });
+
+    // Toggle Change Event (Bootstrap Toggle uses 'change')
     $('.permission-toggle').change(function () {
         const $checkbox = $(this);
         const roleId = $checkbox.data('role-id');
         const permissionId = $checkbox.data('permission-id');
-        const isAttached = $checkbox.is(':checked');
+        const isAttached = $checkbox.prop('checked'); // Bootstrap toggle updates underlying checkbox
 
-        // Optional: Disable while processing
-        $checkbox.prop('disabled', true);
+        // Bootstrap Toggle disables the input, but we can visually disable the toggle if needed
+        // For now, we rely on the AJAX speed or add a loading overlay if strictly necessary
 
         $.ajax({
             url: route('cores.permissions.toggle'),
@@ -37,16 +47,14 @@ $(function () {
             },
             error: (xhr) => {
                 // Revert check state on error
-                $checkbox.prop('checked', !isAttached);
+                // For Bootstrap Toggle, we need to programmatically toggle it back
+                $checkbox.bootstrapToggle(isAttached ? 'off' : 'on', true); // true = silent (no event req)
 
                 Swal.fire({
                     icon: 'error',
                     title: 'Erreur',
                     text: xhr.responseJSON.message || 'Une erreur est survenue'
                 });
-            },
-            complete: () => {
-                $checkbox.prop('disabled', false);
             }
         });
     });
