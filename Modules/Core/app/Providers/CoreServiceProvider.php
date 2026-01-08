@@ -2,31 +2,26 @@
 
 namespace Modules\Core\Providers;
 
-use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
-use Nwidart\Modules\Traits\PathNamespace;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Blade;
 
 class CoreServiceProvider extends ServiceProvider
 {
-    use PathNamespace;
-
-    protected string $name = 'Core';
-
-    protected string $nameLower = 'core';
+    protected string $moduleName = 'Core';
+    protected string $moduleNameLower = 'core';
 
     /**
      * Boot the application events.
      */
     public function boot(): void
     {
-        $this->registerCommands();
-        $this->registerCommandSchedules();
         $this->registerTranslations();
         $this->registerConfig();
         $this->registerViews();
-        $this->loadMigrationsFrom(module_path($this->name, 'database/migrations'));
+        $this->loadMigrationsFrom(module_path($this->moduleName, 'database/migrations'));
+        $this->registerBladeDirectives();
+        $this->registerGates();
     }
 
     /**
@@ -34,45 +29,11 @@ class CoreServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
-    }
-
-    /**
-     * Register commands in the format of Command::class
-     */
-    protected function registerCommands(): void
-    {
-        $this->commands([
-            \Modules\Core\Console\Commands\ResetUserPassword::class,
-        ]);
-    }
-
-    /**
-     * Register command Schedules.
-     */
-    protected function registerCommandSchedules(): void
-    {
-        // $this->app->booted(function () {
-        //     $schedule = $this->app->make(Schedule::class);
-        //     $schedule->command('inspire')->hourly();
-        // });
-    }
-
-    /**
-     * Register translations.
-     */
-    public function registerTranslations(): void
-    {
-        $langPath = resource_path('lang/modules/'.$this->nameLower);
-
-        if (is_dir($langPath)) {
-            $this->loadTranslationsFrom($langPath, $this->nameLower);
-            $this->loadJsonTranslationsFrom($langPath);
-        } else {
-            $this->loadTranslationsFrom(module_path($this->name, 'lang'), $this->nameLower);
-            $this->loadJsonTranslationsFrom(module_path($this->name, 'lang'));
-        }
+        
+        // Enregistrer les services
+        $this->app->singleton(\Modules\Core\Services\ModuleService::class);
+        $this->app->singleton(\Modules\Core\Services\PermissionService::class);
     }
 
     /**
@@ -80,58 +41,98 @@ class CoreServiceProvider extends ServiceProvider
      */
     protected function registerConfig(): void
     {
-        $configPath = module_path($this->name, config('modules.paths.generator.config.path'));
-
-        if (is_dir($configPath)) {
-            $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($configPath));
-
-            foreach ($iterator as $file) {
-                if ($file->isFile() && $file->getExtension() === 'php') {
-                    $config = str_replace($configPath.DIRECTORY_SEPARATOR, '', $file->getPathname());
-                    $config_key = str_replace([DIRECTORY_SEPARATOR, '.php'], ['.', ''], $config);
-                    $segments = explode('.', $this->nameLower.'.'.$config_key);
-
-                    // Remove duplicated adjacent segments
-                    $normalized = [];
-                    foreach ($segments as $segment) {
-                        if (end($normalized) !== $segment) {
-                            $normalized[] = $segment;
-                        }
-                    }
-
-                    $key = ($config === 'config.php') ? $this->nameLower : implode('.', $normalized);
-
-                    $this->publishes([$file->getPathname() => config_path($config)], 'config');
-                    $this->merge_config_from($file->getPathname(), $key);
-                }
-            }
-        }
-    }
-
-    /**
-     * Merge config from the given path recursively.
-     */
-    protected function merge_config_from(string $path, string $key): void
-    {
-        $existing = config($key, []);
-        $module_config = require $path;
-
-        config([$key => array_replace_recursive($existing, $module_config)]);
+        $this->publishes([
+            module_path($this->moduleName, 'config/config.php') => config_path($this->moduleNameLower . '.php'),
+        ], 'config');
+        
+        $this->mergeConfigFrom(
+            module_path($this->moduleName, 'config/config.php'),
+            $this->moduleNameLower
+        );
     }
 
     /**
      * Register views.
      */
-    public function registerViews(): void
+    protected function registerViews(): void
     {
-        $viewPath = resource_path('views/modules/'.$this->nameLower);
-        $sourcePath = module_path($this->name, 'resources/views');
+        $viewPath = resource_path('views/modules/' . $this->moduleNameLower);
+        $sourcePath = module_path($this->moduleName, 'resources/views');
 
-        $this->publishes([$sourcePath => $viewPath], ['views', $this->nameLower.'-module-views']);
+        $this->publishes([
+            $sourcePath => $viewPath
+        ], ['views', $this->moduleNameLower . '-module-views']);
 
-        $this->loadViewsFrom(array_merge($this->getPublishableViewPaths(), [$sourcePath]), $this->nameLower);
+        $this->loadViewsFrom(array_merge($this->getPublishableViewPaths(), [$sourcePath]), $this->moduleNameLower);
+    }
 
-        Blade::componentNamespace(config('modules.namespace').'\\' . $this->name . '\\View\\Components', $this->nameLower);
+    /**
+     * Register translations.
+     */
+    protected function registerTranslations(): void
+    {
+        $langPath = resource_path('lang/modules/' . $this->moduleNameLower);
+
+        if (is_dir($langPath)) {
+            $this->loadTranslationsFrom($langPath, $this->moduleNameLower);
+        } else {
+            $this->loadTranslationsFrom(module_path($this->moduleName, 'resources/lang'), $this->moduleNameLower);
+        }
+    }
+
+    /**
+     * Register custom Blade directives.
+     */
+    protected function registerBladeDirectives(): void
+    {
+        // Directive pour vérifier l'accès au module Core
+        Blade::if('hasCoreAccess', function () {
+            return auth()->check() && auth()->user()->hasModuleAccess('core');
+        });
+
+        // Directive pour afficher les alertes
+        Blade::directive('coreAlert', function () {
+            return "<?php if(session()->has('success')): ?>
+                <div class='alert alert-success'>{{ session('success') }}</div>
+            <?php endif; ?>
+            <?php if(session()->has('error')): ?>
+                <div class='alert alert-danger'>{{ session('error') }}</div>
+            <?php endif; ?>
+            <?php if(session()->has('info')): ?>
+                <div class='alert alert-info'>{{ session('info') }}</div>
+            <?php endif; ?>";
+        });
+
+        // Directive pour vérifier si on est en mode impersonnification
+        Blade::if('impersonating', function () {
+            return session()->has('impersonate');
+        });
+    }
+
+    /**
+     * Register custom gates.
+     */
+    protected function registerGates(): void
+    {
+        // Super-admin a accès à tout
+        Gate::before(function ($user, $ability) {
+            if ($user->hasRole('super-admin')) {
+                return true;
+            }
+        });
+
+        // Empêcher la modification des rôles système
+        Gate::define('edit-system-role', function ($user, $role) {
+            if (in_array($role->name, ['super-admin', 'admin'])) {
+                return $user->hasRole('super-admin');
+            }
+            return true;
+        });
+
+        // Empêcher la suppression de son propre compte
+        Gate::define('delete-user', function ($user, $targetUser) {
+            return $user->id !== $targetUser->id;
+        });
     }
 
     /**
@@ -139,18 +140,23 @@ class CoreServiceProvider extends ServiceProvider
      */
     public function provides(): array
     {
-        return [];
+        return [
+            \Modules\Core\Services\ModuleService::class,
+            \Modules\Core\Services\PermissionService::class,
+        ];
     }
 
+    /**
+     * Get publishable view paths.
+     */
     private function getPublishableViewPaths(): array
     {
         $paths = [];
         foreach (config('view.paths') as $path) {
-            if (is_dir($path.'/modules/'.$this->nameLower)) {
-                $paths[] = $path.'/modules/'.$this->nameLower;
+            if (is_dir($path . '/modules/' . $this->moduleNameLower)) {
+                $paths[] = $path . '/modules/' . $this->moduleNameLower;
             }
         }
-
         return $paths;
     }
 }
