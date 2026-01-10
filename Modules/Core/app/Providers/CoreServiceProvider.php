@@ -22,6 +22,16 @@ class CoreServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(module_path($this->moduleName, 'database/migrations'));
         $this->registerBladeDirectives();
         $this->registerGates();
+        
+        $this->commands([
+            \Modules\Core\Console\Commands\MakeSuperAdminCommand::class,
+            \Modules\Core\Console\Commands\AssignRoleCommand::class,
+            \Modules\Core\Console\Commands\CleanupPermissionsCommand::class,
+            \Modules\Core\Console\Commands\ModuleStatsCommand::class,
+            \Modules\Core\Console\Commands\SyncModulesCommand::class,
+            \Modules\Core\Console\Commands\SyncPermissionsCommand::class,
+            \Modules\Core\Console\Commands\UserPermissionsCommand::class,
+        ]);
     }
 
     /**

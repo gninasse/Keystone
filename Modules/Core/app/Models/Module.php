@@ -111,7 +111,7 @@ class Module extends Model
      */
     public function permissions()
     {
-        return \Spatie\Permission\Models\Permission::where('module', $this->slug)->get();
+        return $this->hasMany(\Spatie\Permission\Models\Permission::class, 'module', 'slug');
     }
 
     /**

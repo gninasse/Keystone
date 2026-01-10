@@ -14,15 +14,21 @@
     </div>
     <div class="card-body">
         <div id="toolbar">
+            @can('cores.roles.store')
             <button id="btn-add-role" class="btn btn-primary" data-bs-toggle="tooltip" title="Ajouter un rôle">
                 <i class="fas fa-plus"></i>
             </button>
+            @endcan
+            @can('cores.roles.update')
             <button id="btn-edit-role" class="btn btn-info" disabled data-bs-toggle="tooltip" title="Modifier">
                 <i class="fas fa-edit"></i>
             </button>
+            @endcan
+            @can('cores.roles.destroy')
             <button id="btn-delete-role" class="btn btn-danger" disabled data-bs-toggle="tooltip" title="Supprimer">
                 <i class="fas fa-trash"></i>
             </button>
+            @endcan
         </div>
         <table id="roles-table"
                data-toggle="table"

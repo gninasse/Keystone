@@ -54,7 +54,8 @@
                                            data-onstyle="success"
                                            data-offstyle="danger"
                                            data-size="small"
-                                           {{ $role->hasPermissionTo($permission->name) ? 'checked' : '' }}>
+                                           {{ $role->hasPermissionTo($permission->name) ? 'checked' : '' }}
+                                           @cannot('cores.permissions.toggle') disabled @endcannot>
                                 </td>
                             @endforeach
                         </tr>

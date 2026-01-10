@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Nwidart\Modules\Facades\Module;
+use Spatie\Permission\Models\Permission;
 
 class GenerateModulePermissions extends Command
 {

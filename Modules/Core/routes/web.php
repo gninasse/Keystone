@@ -7,6 +7,7 @@ use Modules\Core\Http\Controllers\DashboardController;
 use Modules\Core\Http\Controllers\UserController;
 use Modules\Core\Http\Controllers\RoleController;
 use Modules\Core\Http\Controllers\PermissionController;
+use Modules\Core\Http\Controllers\ModuleController;
 
 Route::get('login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('login', [AuthController::class, 'login'])->name('login.post');
@@ -43,6 +44,19 @@ Route::middleware(['auth'])->group(function () {
         Route::prefix('permissions')->name('permissions.')->group(function () {
             Route::get('/', [PermissionController::class, 'index'])->name('index');
             Route::post('/toggle', [PermissionController::class, 'toggle'])->name('toggle');
+            Route::post('/sync', [ModuleController::class, 'syncPermissions'])->name('sync');
+        });
+
+        // Routes pour la gestion des modules
+        Route::prefix('modules')->name('modules.')->group(function () {
+            Route::get('/', [ModuleController::class, 'index'])->name('index');
+            Route::post('/install', [ModuleController::class, 'install'])->name('install');
+            Route::get('/{slug}', [ModuleController::class, 'show'])->name('show');
+            Route::post('/{slug}/enable', [ModuleController::class, 'enable'])->name('enable');
+            Route::post('/{slug}/disable', [ModuleController::class, 'disable'])->name('disable');
+            Route::delete('/{slug}', [ModuleController::class, 'uninstall'])->name('uninstall');
+            Route::get('/{slug}/configure', [ModuleController::class, 'configure'])->name('configure');
+            Route::post('/{slug}/configure', [ModuleController::class, 'updateConfiguration'])->name('configure.update');
         });
     });
 });

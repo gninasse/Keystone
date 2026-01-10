@@ -14,24 +14,36 @@
     </div>
     <div class="card-body">
         <div id="toolbar">
+            @can('cores.users.store')
             <button id="btn-add-user" class="btn btn-primary" data-bs-toggle="tooltip" title="Ajouter un utilisateur">
                 <i class="fas fa-plus"></i>
             </button>
+            @endcan
+            @can('cores.users.update')
             <button id="btn-edit-user" class="btn btn-info" disabled data-bs-toggle="tooltip" title="Modifier">
                 <i class="fas fa-edit"></i>
             </button>
+            @endcan
+            @can('cores.users.destroy')
             <button id="btn-delete-user" class="btn btn-danger" disabled data-bs-toggle="tooltip" title="Supprimer">
                 <i class="fas fa-trash"></i>
             </button>
+            @endcan
+            @can('cores.users.reset-password')
             <button id="btn-reset-password" class="btn btn-warning" disabled data-bs-toggle="tooltip" title="Réinitialiser MDP">
                 <i class="fas fa-key"></i>
             </button>
+            @endcan
+            @can('cores.users.toggle-status')
             <button id="btn-enable-user" class="btn btn-success" disabled data-bs-toggle="tooltip" title="Activer">
                 <i class="fas fa-check"></i>
             </button>
+            @endcan
+            @can('cores.users.toggle-status')
             <button id="btn-disable-user" class="btn btn-secondary" disabled data-bs-toggle="tooltip" title="Désactiver">
                 <i class="fas fa-ban"></i>
             </button>
+            @endcan
         </div>
         <table id="users-table"
                data-toggle="table"
