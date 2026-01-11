@@ -90,16 +90,23 @@ class PermissionService
      */
     protected function extractCategory(string $permissionName): string
     {
-        if (str_contains($permissionName, '.view')) return 'view';
+       if (str_contains($permissionName, '.view')) return 'view';
+        if (str_contains($permissionName, '.index')) return 'view';
         if (str_contains($permissionName, '.create')) return 'create';
+        if (str_contains($permissionName, '.store')) return 'create';
         if (str_contains($permissionName, '.edit')) return 'edit';
+        if (str_contains($permissionName, '.update')) return 'edit';
         if (str_contains($permissionName, '.delete')) return 'delete';
+        if (str_contains($permissionName, '.destroy')) return 'delete';
+        if (str_contains($permissionName, '.toggle')) return 'toggle';
+        if (str_contains($permissionName, '.show')) return 'view';
         if (str_contains($permissionName, '.manage')) return 'manage';
         if (str_contains($permissionName, '.assign')) return 'assign';
         if (str_contains($permissionName, '.configure')) return 'configure';
         if (str_contains($permissionName, '.enable')) return 'enable';
         if (str_contains($permissionName, '.disable')) return 'disable';
         if (str_contains($permissionName, '.install')) return 'install';
+        if (str_contains($permissionName, '.uninstall')) return 'uninstall';
         
         return 'other';
     }
