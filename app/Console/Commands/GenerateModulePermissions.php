@@ -61,12 +61,15 @@ class GenerateModulePermissions extends Command
             $this->warn("Anciennes permissions supprimées pour {$moduleName}");
         }
 
-        foreach ($permissions as $permission) {
+        foreach ($permissions as $key => $permission) {
             $permissionModel = Permission::firstOrCreate(
-                ['name' => $permission],
+                ['name' => $key],
                 [
+                    'label' => $permission,
+                    'description' => $permission,
                     'module' => strtolower($moduleName),
-                    'guard_name' => 'web'
+                    'guard_name' => 'web',
+                    'category' => $this->extractCategory($key),
                 ]
             );
 
@@ -76,5 +79,21 @@ class GenerateModulePermissions extends Command
                 $this->line("  - {$permission} (existe déjà)");
             }
         }
+    }
+
+    protected function extractCategory(string $permissionName): string
+    {
+        if (str_contains($permissionName, '.view')) return 'view';
+        if (str_contains($permissionName, '.create')) return 'create';
+        if (str_contains($permissionName, '.edit')) return 'edit';
+        if (str_contains($permissionName, '.delete')) return 'delete';
+        if (str_contains($permissionName, '.manage')) return 'manage';
+        if (str_contains($permissionName, '.assign')) return 'assign';
+        if (str_contains($permissionName, '.configure')) return 'configure';
+        if (str_contains($permissionName, '.enable')) return 'enable';
+         if (str_contains($permissionName, '.disable')) return 'disable';
+        if (str_contains($permissionName, '.install')) return 'install';
+        
+        return 'other';
     }
 }

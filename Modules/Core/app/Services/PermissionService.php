@@ -54,14 +54,15 @@ class PermissionService
         $created = 0;
         $updated = 0;
 
-        foreach ($permissionsConfig as $name => $description) {
+        foreach ($permissionsConfig as $name => $label) {
             $permission = Permission::firstOrNew(['name' => $name]);
             
             $wasRecentlyCreated = !$permission->exists;
             
             $permission->fill([
                 'module' => strtolower($moduleSlug),
-                'description' => $description,
+                'label' => $label,
+                'description' => $label,
                 'category' => $this->extractCategory($name),
                 'guard_name' => 'web',
             ]);
@@ -97,6 +98,7 @@ class PermissionService
         if (str_contains($permissionName, '.assign')) return 'assign';
         if (str_contains($permissionName, '.configure')) return 'configure';
         if (str_contains($permissionName, '.enable')) return 'enable';
+        if (str_contains($permissionName, '.disable')) return 'disable';
         if (str_contains($permissionName, '.install')) return 'install';
         
         return 'other';
@@ -122,20 +124,24 @@ class PermissionService
     {
         $created = 0;
 
-        foreach ($permissions as $permission) {
-            if (is_string($permission)) {
+        foreach ($permissions as $key => $permission) {
+            if (is_int($key) && is_string($permission)) {
                 $name = $permission;
-                $description = null;
-            } else {
+                $label = null; 
+            } else if(is_int($key) && is_array($permission)) {
                 $name = $permission['name'];
-                $description = $permission['description'] ?? null;
+                $label = $permission['label'] ?? null;
+            }elseif (is_string($key) && is_string($permission)){
+                $name = $key;
+                $label = $permission;
             }
 
             $permissionModel = Permission::firstOrCreate(
                 ['name' => $name],
                 [
                     'module' => $module,
-                    'description' => $description,
+                    'label' => $label,
+                    'description' => $label,
                     'category' => $this->extractCategory($name),
                     'guard_name' => 'web',
                 ]
