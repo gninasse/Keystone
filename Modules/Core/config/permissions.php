@@ -12,7 +12,7 @@ return [
     // Rôles
     'cores.roles.index' => 'Voir la liste des rôles',
     'cores.roles.store' => 'Créer un rôle',
-    'cores.roles.update' => 'Modifier un rôle',
+    'cores.roles.update' => 'Modifier un rôle', 
     'cores.roles.destroy' => 'Supprimer un rôle',
 
     // Permissions
