@@ -9,7 +9,7 @@ use Spatie\Permission\Models\Permission;
 class GenerateModulePermissions extends Command
 {
     protected $signature = 'permissions:generate {module?} {--sync}';
-    protected $description = 'Générer les permissions pour les modules';
+    protected $description = 'Générer les permissions pour les modules.';
 
     public function handle()
     {
