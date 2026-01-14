@@ -54,6 +54,7 @@ class RoleController extends Controller
         try {
             $role = Role::create([
                 'name' => $request->name,
+                'description' => $request->description,
                 'guard_name' => 'web' 
             ]);
 
@@ -97,6 +98,7 @@ class RoleController extends Controller
         try {
             $role = Role::findOrFail($id);
             $role->name = $request->name;
+            $role->description = $request->description;
             $role->save();
 
             return response()->json([
@@ -129,6 +131,81 @@ class RoleController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la suppression : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get permissions for a role.
+     */
+    public function getPermissions($id)
+    {
+        try {
+            $role = Role::findOrFail($id);
+            $rolePermissions = $role->permissions->pluck('id')->toArray();
+            
+            $permissionsByModule = \Spatie\Permission\Models\Permission::all()
+                ->groupBy('module')
+                ->map(function($permissions, $module) use ($rolePermissions) {
+                    return [
+                        'module' => $module ?: 'Système',
+                        'permissions' => $permissions->map(function($permission) use ($rolePermissions) {
+                            return [
+                                'id' => $permission->id,
+                                'name' => $permission->name,
+                                'label' => $permission->label ?: $permission->name,
+                                'assigned' => in_array($permission->id, $rolePermissions)
+                            ];
+                        })
+                    ];
+                })->values();
+
+            $modules = \Spatie\Permission\Models\Permission::distinct()->pluck('module')->filter()->values();
+
+            return response()->json([
+                'success' => true,
+                'role_name' => $role->name,
+                'permissions_by_module' => $permissionsByModule,
+                'modules' => $modules
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Toggle a permission for a role.
+     */
+    public function togglePermission(Request $request, $id)
+    {
+        try {
+            $role = Role::findOrFail($id);
+            
+            $request->validate([
+                'permission_id' => 'required|exists:permissions,id',
+            ]);
+
+            $permission = \Spatie\Permission\Models\Permission::findOrFail($request->permission_id);
+
+            if ($role->hasPermissionTo($permission->name)) {
+                $role->revokePermissionTo($permission->name);
+                $message = 'Permission révoquée avec succès';
+            } else {
+                $role->givePermissionTo($permission->name);
+                $message = 'Permission assignée avec succès';
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => $message
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur : ' . $e->getMessage()
             ], 500);
         }
     }

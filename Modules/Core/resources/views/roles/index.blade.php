@@ -29,6 +29,9 @@
                 <i class="fas fa-trash"></i>
             </button>
             @endcan
+            <button id="btn-manage-permissions" class="btn btn-secondary" disabled data-bs-toggle="tooltip" title="Gérer les permissions">
+                <i class="fas fa-shield-alt"></i>
+            </button>
         </div>
         <table id="roles-table"
                data-toggle="table"
@@ -48,6 +51,7 @@
                     <th data-field="state" data-radio="true"></th>
                     <th data-field="id" data-sortable="true">ID</th>
                     <th data-field="name" data-sortable="true">Nom</th>
+                    <th data-field="description" data-sortable="true">Description</th>
                     <th data-field="guard_name" data-sortable="true">Guard</th>
                     <th data-field="created_at" data-sortable="true" data-formatter="dateFormatter">Date création</th>
                 </tr>
@@ -57,6 +61,9 @@
 </div>
 
 @include('core::roles._modal')
+
+{{-- Modal pour gérer les permissions --}}
+<div id="permissionModalContainer"></div>
 
 @stop
 

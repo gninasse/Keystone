@@ -49,6 +49,7 @@ $(function () {
         const isSingleSelection = selections.length === 1;
 
         $('#btn-edit-role').prop('disabled', !isSingleSelection);
-        $('#btn-delete-role').prop('disabled', !hasSelection); // Allow multi-delete? Backend currently handles single destroy by ID. Keep likely single for now.
+        $('#btn-delete-role').prop('disabled', !hasSelection);
+        $('#btn-manage-permissions').prop('disabled', !isSingleSelection);
     });
 });

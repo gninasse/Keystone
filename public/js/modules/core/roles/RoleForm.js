@@ -48,6 +48,7 @@ export class RoleForm {
         $('#modalTitle').text('Modifier un rôle');
         $('#role_id').val(data.id);
         $('#name').val(data.name);
+        $('#description').val(data.description);
         this.$modal.modal('show');
     }
 

@@ -203,7 +203,7 @@ class UserController extends Controller
             $user = User::findOrFail($id);
             
             // Empêcher la suppression de son propre compte
-            if ($user->id === auth()->id()) {
+            if ($user->getKey() === auth()->id()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Vous ne pouvez pas supprimer votre propre compte'
@@ -254,7 +254,7 @@ class UserController extends Controller
         try {
             $user = User::findOrFail($id);
             
-            if ($user->id === auth()->id()) {
+            if ($user->getKey() === auth()->id()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Vous ne pouvez pas modifier le statut de votre propre compte'

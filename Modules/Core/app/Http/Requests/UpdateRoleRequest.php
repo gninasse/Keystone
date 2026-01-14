@@ -17,6 +17,7 @@ class UpdateRoleRequest extends FormRequest
                 'max:255',
                 Rule::unique('roles', 'name')->ignore($roleId)
             ],
+            'description' => 'nullable|string|max:500',
         ];
     }
 

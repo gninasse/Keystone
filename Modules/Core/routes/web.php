@@ -47,6 +47,10 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/', [RoleController::class, 'store'])->name('store');
             Route::put('/{id}', [RoleController::class, 'update'])->name('update');
             Route::delete('/{id}', [RoleController::class, 'destroy'])->name('destroy');
+            
+            // Gestion des permissions du rôle
+            Route::get('/{id}/permissions', [RoleController::class, 'getPermissions'])->name('permissions');
+            Route::post('/{id}/toggle-permission', [RoleController::class, 'togglePermission'])->name('toggle-permission');
         });
 
         // Routes pour la gestion des permissions
