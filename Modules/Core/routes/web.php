@@ -35,6 +35,8 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/{id}/roles', [UserController::class, 'assignRole'])->name('assign-role');
             Route::delete('/{id}/roles', [UserController::class, 'removeRole'])->name('remove-role');
             Route::delete('/{id}/permissions', [UserController::class, 'removePermission'])->name('remove-permission');
+            Route::get('/{id}/permissions/available', [UserController::class, 'getAvailablePermissions'])->name('available-permissions');
+            Route::post('/{id}/permissions', [UserController::class, 'assignPermissions'])->name('assign-permissions');
         });
 
         // Routes pour la gestion des rôles

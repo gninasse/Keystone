@@ -147,15 +147,19 @@ $(document).ready(function () {
 
                     // Update header
                     $('h3').first().text(response.data.name + ' ' + response.data.last_name);
+
+                    const statusBadgeHtml = $('#user-status-badge').length ? $('#user-status-badge')[0].outerHTML : '';
+
                     $('.text-muted .fa-envelope').parent().html(
                         '<i class="fas fa-envelope me-1"></i> ' + response.data.email +
                         '<span class="mx-2">•</span>' +
-                        '<i class="fas fa-calendar me-1"></i> Joined ' +
-                        new Date(response.data.created_at).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
+                        '<i class="fas fa-calendar me-1"></i> Inscrit le ' +
+                        new Date(response.data.created_at).toLocaleDateString('fr-FR', {
+                            day: '2-digit',
+                            month: '2-digit',
                             year: 'numeric'
-                        })
+                        }) +
+                        (statusBadgeHtml ? '<span class="mx-2">•</span>' + statusBadgeHtml : '')
                     );
 
                     isEditMode = false;
@@ -227,6 +231,47 @@ $(document).ready(function () {
                             icon: 'error',
                             title: 'Erreur',
                             text: xhr.responseJSON?.message || 'Une erreur est survenue'
+                        });
+                    }
+                });
+            }
+        });
+    });
+
+    // Toggle Status
+    $('#btn-toggle-status').click(function () {
+        const action = $(this).data('action');
+
+        Swal.fire({
+            title: `Voulez-vous ${action} cet utilisateur ?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: `Oui, ${action}`,
+            cancelButtonText: 'Annuler'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: route('cores.users.toggle-status', window.userId),
+                    method: 'POST',
+                    success: function (response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Succès',
+                                text: response.message,
+                                timer: 2000
+                            }).then(() => {
+                                location.reload();
+                            });
+                        }
+                    },
+                    error: function (xhr) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Erreur',
+                            text: xhr.responseJSON?.message || 'Erreur changement de statut'
                         });
                     }
                 });
@@ -353,7 +398,7 @@ $(document).ready(function () {
                     title: 'Erreur',
                     text: xhr.responseJSON?.message || 'Une erreur est survenue'
                 });
-                $('#btn-confirm-assign').prop('disabled', false).html('<i class="fas fa-plus"></i> ASSIGN ROLE');
+                $('#btn-confirm-assign').prop('disabled', false).html('<i class="fas fa-plus"></i> ASSIGNER LE RÔLE');
             }
         });
     });
@@ -473,6 +518,151 @@ $(document).ready(function () {
                         });
                     }
                 });
+            }
+        });
+    });
+
+    // --- Direct Permissions Management ---
+
+    let availablePermissionsByModule = [];
+
+    // Open Assign Permissions Modal
+    $('#btn-assign-permissions').on('click', function () {
+        loadAvailablePermissions();
+        $('#assignPermissionsModal').modal('show');
+    });
+
+    // Fetch and Load Available Permissions
+    function loadAvailablePermissions() {
+        const $list = $('#permissions-list');
+        const $moduleFilter = $('#module-filter');
+
+        $list.html('<div class="p-4 text-center"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Chargement des permissions...</p></div>');
+
+        $.ajax({
+            url: route('cores.users.available-permissions', window.userId),
+            success: function (response) {
+                if (response.success) {
+                    availablePermissionsByModule = response.permissions_by_module;
+
+                    // Populate module filter
+                    $moduleFilter.html('<option value="all">Tous les modules</option>');
+                    response.modules.forEach(module => {
+                        $moduleFilter.append(`<option value="${module}">${module}</option>`);
+                    });
+
+                    renderPermissions();
+                }
+            }
+        });
+    }
+
+    // Render Permissions in Modal
+    function renderPermissions() {
+        const $list = $('#permissions-list');
+        const searchQuery = $('#permission-search').val().toLowerCase();
+        const moduleFilter = $('#module-filter').val();
+
+        let html = '';
+        let hasPermissions = false;
+
+        availablePermissionsByModule.forEach(group => {
+            if (moduleFilter !== 'all' && group.module !== moduleFilter) {
+                return;
+            }
+
+            const filteredPermissions = group.permissions.filter(p =>
+                (p.name && p.name.toLowerCase().includes(searchQuery)) ||
+                (p.label && p.label.toLowerCase().includes(searchQuery))
+            );
+
+            if (filteredPermissions.length > 0) {
+                hasPermissions = true;
+                html += `
+                    <div class="bg-light px-3 py-2 border-bottom sticky-top" style="z-index: 10;">
+                        <span class="fw-bold text-uppercase small text-muted">${group.module}</span>
+                    </div>
+                    <div class="list-group list-group-flush">
+                `;
+
+                filteredPermissions.forEach(p => {
+                    html += `
+                        <label class="list-group-item d-flex align-items-center py-2 cursor-pointer">
+                            <div class="form-check mb-0">
+                                <input class="form-check-input permission-checkbox" 
+                                       type="checkbox" 
+                                       value="${p.id}" 
+                                       id="perm-${p.id}">
+                            </div>
+                            <div class="ms-3">
+                                <div class="fw-bold fs-6">${p.label || p.name}</div>
+                                <code class="small text-muted">${p.name}</code>
+                            </div>
+                        </label>
+                    `;
+                });
+
+                html += `</div>`;
+            }
+        });
+
+        $list.html(hasPermissions ? html : '<div class="p-4 text-center text-muted">Aucune permission trouvée correspondant à vos critères.</div>');
+    }
+
+    // Modal search and filter handlers
+    $('#permission-search').on('keyup', renderPermissions);
+    $('#module-filter').on('change', renderPermissions);
+
+    // Submit Permissions Assignment
+    $('#assign-permissions-form').on('submit', function (e) {
+        e.preventDefault();
+
+        const selectedIds = [];
+        $('.permission-checkbox:checked').each(function () {
+            selectedIds.push($(this).val());
+        });
+
+        if (selectedIds.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Attention',
+                text: 'Veuillez sélectionner au moins une permission.'
+            });
+            return;
+        }
+
+        const $btn = $('#btn-confirm-assign-permissions');
+        const originalText = $btn.html();
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> Assignation...');
+
+        $.ajax({
+            url: route('cores.users.assign-permissions', window.userId),
+            method: 'POST',
+            data: {
+                permission_ids: selectedIds
+            },
+            success: function (response) {
+                if (response.success) {
+                    $('#assignPermissionsModal').modal('hide');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Assignées',
+                        text: response.message,
+                        timer: 2000
+                    }).then(() => {
+                        location.reload();
+                    });
+                }
+            },
+            error: function (xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: xhr.responseJSON?.message || 'Une erreur est survenue'
+                });
+            },
+            complete: function () {
+                $btn.prop('disabled', false).html(originalText);
             }
         });
     });

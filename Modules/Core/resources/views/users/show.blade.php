@@ -33,15 +33,30 @@
                         @endif
                         <i class="fas fa-envelope me-1"></i> {{ $user->email }}
                         <span class="mx-2">•</span>
-                        <i class="fas fa-calendar me-1"></i> Joined {{ $user->created_at->format('M d, Y') }}
+                        <i class="fas fa-calendar me-1"></i> Inscrit le {{ $user->created_at->format('d/m/Y') }}
+                        <span class="mx-2">•</span>
+                        <span id="user-status-badge" class="badge {{ $user->is_active ? 'bg-success' : 'bg-danger' }}">
+                            {{ $user->is_active ? 'Actif' : 'Inactif' }}
+                        </span>
                     </div>
                 </div>
                 <div class="col-auto">
+                    @if(auth()->id() !== $user->id)
+                        @if($user->is_active)
+                            <button type="button" class="btn btn-outline-danger me-2" id="btn-toggle-status" data-action="désactiver">
+                                <i class="fas fa-user-slash"></i> Désactiver
+                            </button>
+                        @else
+                            <button type="button" class="btn btn-outline-success me-2" id="btn-toggle-status" data-action="activer">
+                                <i class="fas fa-user-check"></i> Activer
+                            </button>
+                        @endif
+                    @endif
                     <button type="button" class="btn btn-outline-secondary me-2" id="btn-reset-password">
-                        <i class="fas fa-key"></i> Reset Password
+                        <i class="fas fa-key"></i> Réinitialiser le mot de passe
                     </button>
                     <button type="button" class="btn btn-primary" id="btn-edit-mode">
-                        <i class="fas fa-edit"></i> Edit Profile
+                        <i class="fas fa-edit"></i> Modifier le profil
                     </button>
                 </div>
             </div>
@@ -55,11 +70,11 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-1">Assigned Roles</h6>
+                            <h6 class="text-muted mb-1">Rôles assignés</h6>
                             <h3 class="mb-0">{{ $user->roles->count() }}</h3>
                         </div>
                         @if($user->roles->where('created_at', '>=', now()->subDays(7))->count() > 0)
-                            <span class="badge bg-success">+{{ $user->roles->where('created_at', '>=', now()->subDays(7))->count() }} new</span>
+                            <span class="badge bg-success">+{{ $user->roles->where('created_at', '>=', now()->subDays(7))->count() }} nouveaux</span>
                         @endif
                     </div>
                 </div>
@@ -68,7 +83,7 @@
         <div class="col-md-3">
             <div class="card">
                 <div class="card-body">
-                    <h6 class="text-muted mb-1">Direct Permissions</h6>
+                    <h6 class="text-muted mb-1">Permissions directes</h6>
                     <h3 class="mb-0">{{ $user->getDirectPermissions()->count() }}</h3>
                 </div>
             </div>
@@ -76,10 +91,10 @@
         <div class="col-md-3">
             <div class="card">
                 <div class="card-body">
-                    <h6 class="text-muted mb-1">Total Effective</h6>
+                    <h6 class="text-muted mb-1">Total effectif</h6>
                     <h3 class="mb-0">
                         {{ $user->getAllPermissions()->count() }}
-                        <small class="text-muted">Calculated</small>
+                        <small class="text-muted">Calculé</small>
                     </h3>
                 </div>
             </div>
@@ -87,8 +102,8 @@
         <div class="col-md-3">
             <div class="card">
                 <div class="card-body">
-                    <h6 class="text-muted mb-1">Last Login</h6>
-                    <h3 class="mb-0">{{ $user->last_login_at ? $user->last_login_at->diffForHumans() : 'Never' }}</h3>
+                    <h6 class="text-muted mb-1">Dernière connexion</h6>
+                    <h3 class="mb-0">{{ $user->last_login_at ? $user->last_login_at->diffForHumans() : 'Jamais' }}</h3>
                 </div>
             </div>
         </div>
@@ -100,22 +115,22 @@
             <ul class="nav nav-tabs card-header-tabs" role="tablist">
                 <li class="nav-item">
                     <a class="nav-link active" data-bs-toggle="tab" href="#general" role="tab">
-                        General
+                        Général
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" data-bs-toggle="tab" href="#roles" role="tab">
-                        Roles <span class="badge bg-light text-dark ms-1 shadow-sm">{{ $user->roles->count() }}</span>
+                        Rôles <span class="badge bg-light text-dark ms-1 shadow-sm">{{ $user->roles->count() }}</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" data-bs-toggle="tab" href="#direct-permissions" role="tab">
-                        Direct Permissions <span class="badge bg-light text-dark ms-1 shadow-sm">{{ $user->getDirectPermissions()->count() }}</span>
+                        Permissions directes <span class="badge bg-light text-dark ms-1 shadow-sm">{{ $user->getDirectPermissions()->count() }}</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" data-bs-toggle="tab" href="#effective-access" role="tab">
-                        Effective Access
+                        Accès effectif
                     </a>
                 </li>
             </ul>
@@ -268,10 +283,10 @@
                             <input type="text" 
                                    class="form-control" 
                                    id="search-roles" 
-                                   placeholder="Search assigned roles...">
+                                   placeholder="Rechercher des rôles assignés...">
                         </div>
                         <button type="button" class="btn btn-primary" id="btn-assign-role">
-                            <i class="fas fa-plus"></i> ASSIGN NEW ROLE
+                            <i class="fas fa-plus"></i> ASSIGNER UN NOUVEAU RÔLE
                         </button>
                     </div>
 
@@ -281,9 +296,9 @@
                                 <thead>
                                     <tr>
                                         <th style="width: 50px;"></th>
-                                        <th>ROLE NAME</th>
+                                        <th>NOM DU RÔLE</th>
                                         <th>DESCRIPTION</th>
-                                        <th>DATE ASSIGNED</th>
+                                        <th>DATE D'ASSIGNATION</th>
                                         <th style="width: 100px;">ACTIONS</th>
                                     </tr>
                                 </thead>
@@ -303,18 +318,18 @@
                                             </td>
                                             <td>
                                                 <span class="text-muted">
-                                                    {{ Str::limit($role->description ?? 'No description', 60) }}
+                                                    {{ Str::limit($role->description ?? 'Pas de description', 60) }}
                                                 </span>
                                             </td>
                                             <td>
-                                                {{ $role->pivot->created_at ? $role->pivot->created_at->format('M d, Y') : '-' }}
+                                                {{ $role->pivot->created_at ? $role->pivot->created_at->format('d/m/Y') : '-' }}
                                             </td>
                                             <td>
                                                 <button type="button" 
                                                         class="btn btn-sm btn-outline-danger btn-remove-role" 
                                                         data-role-id="{{ $role->id }}"
                                                         data-role-name="{{ $role->name }}">
-                                                    <i class="fas fa-trash"></i> Remove
+                                                    <i class="fas fa-trash"></i> Retirer
                                                 </button>
                                             </td>
                                         </tr>
@@ -339,9 +354,11 @@
                             <input type="text" 
                                    class="form-control" 
                                    id="search-direct-permissions" 
-                                   placeholder="Search direct permissions...">
+                                   placeholder="Rechercher des permissions directes...">
                         </div>
-                        {{-- Future: Add button to assign direct permissions --}}
+                        <button type="button" class="btn btn-primary" id="btn-assign-permissions">
+                            <i class="fas fa-plus"></i> ASSIGNER DES PERMISSIONS DIRECTES
+                        </button>
                     </div>
 
                     @if($user->getDirectPermissions()->count() > 0)
@@ -349,8 +366,8 @@
                             <table class="table table-hover" id="direct-permissions-table">
                                 <thead>
                                     <tr>
-                                        <th>PERMISSION NAME</th>
-                                        <th>LABEL</th>
+                                        <th>NOM DE LA PERMISSION</th>
+                                        <th>LIBELLÉ</th>
                                         <th>MODULE</th>
                                         <th style="width: 100px;">ACTIONS</th>
                                     </tr>
@@ -372,7 +389,7 @@
                                                 @if($permission->module)
                                                     <span class="badge bg-light text-dark border">{{ $permission->module }}</span>
                                                 @else
-                                                    <span class="text-muted small">System</span>
+                                                    <span class="text-muted small">Système</span>
                                                 @endif
                                             </td>
                                             <td>
@@ -405,7 +422,7 @@
                             <input type="text" 
                                    class="form-control" 
                                    id="search-effective-permissions" 
-                                   placeholder="Search all effective permissions...">
+                                   placeholder="Rechercher toutes les permissions effectives...">
                         </div>
                     </div>
 
@@ -414,8 +431,8 @@
                             <table class="table table-hover" id="effective-permissions-table">
                                 <thead>
                                     <tr>
-                                        <th>PERMISSION NAME</th>
-                                        <th>LABEL</th>
+                                        <th>NOM DE LA PERMISSION</th>
+                                        <th>LIBELLÉ</th>
                                         <th>SOURCE</th>
                                         <th>MODULE</th>
                                     </tr>
@@ -435,7 +452,7 @@
                                             <td>{{ $permission->label ?? '-' }}</td>
                                             <td>
                                                 @if($user->getDirectPermissions()->contains($permission))
-                                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">Direct</span>
+                                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">Directe</span>
                                                 @else
                                                     <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">Via rôle</span>
                                                 @endif
@@ -444,7 +461,7 @@
                                                 @if($permission->module)
                                                     <span class="badge bg-light text-dark border">{{ $permission->module }}</span>
                                                 @else
-                                                    <span class="text-muted small">System</span>
+                                                    <span class="text-muted small">Système</span>
                                                 @endif
                                             </td>
                                         </tr>
@@ -469,7 +486,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="assignRoleModalLabel">
-                    Assign New Role to {{ $user->full_name }}
+                    Assigner un nouveau rôle à {{ $user->full_name }}
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -477,7 +494,7 @@
                 @csrf
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="role-search" class="form-label">Select Role</label>
+                        <label for="role-search" class="form-label">Sélectionner un rôle</label>
                         <div class="input-group mb-2">
                             <span class="input-group-text">
                                 <i class="fas fa-search"></i>
@@ -485,7 +502,7 @@
                             <input type="text" 
                                    class="form-control" 
                                    id="role-search" 
-                                   placeholder="Search and select a role...">
+                                   placeholder="Rechercher et sélectionner un rôle...">
                         </div>
                         
                         <div id="roles-list" class="border rounded" style="max-height: 250px; overflow-y: auto;">
@@ -494,24 +511,75 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="assignment-note" class="form-label">Assignment Note (Optional)</label>
+                        <label for="assignment-note" class="form-label">Note d'assignation (Optionnel)</label>
                         <textarea class="form-control" 
                                   id="assignment-note" 
                                   rows="3" 
-                                  placeholder="Add a reason or context for this assignment..."></textarea>
+                                  placeholder="Ajouter une raison ou un contexte pour cette assignation..."></textarea>
                     </div>
 
                     <div class="alert alert-info d-flex align-items-center" role="alert">
                         <i class="fas fa-info-circle me-2"></i>
-                        <small>Permissions from the selected role will be inherited immediately.</small>
+                        <small>Les permissions du rôle sélectionné seront héritées immédiatement.</small>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        CANCEL
+                        ANNULER
                     </button>
                     <button type="submit" class="btn btn-primary" id="btn-confirm-assign">
-                        <i class="fas fa-plus"></i> ASSIGN ROLE
+                        <i class="fas fa-plus"></i> ASSIGNER LE RÔLE
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{{-- Assign Permissions Modal --}}
+<div class="modal fade" id="assignPermissionsModal" tabindex="-1" aria-labelledby="assignPermissionsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignPermissionsModalLabel">
+                    Assigner des permissions directes à {{ $user->full_name }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="assign-permissions-form">
+                @csrf
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label for="permission-search" class="form-label">Rechercher des permissions</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="permission-search" 
+                                       placeholder="ex: create_user, delete_record...">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="module-filter" class="form-label">Filtrer par module</label>
+                            <select class="form-select" id="module-filter">
+                                <option value="all">Tous les modules</option>
+                                {{-- Modules will be loaded here --}}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div id="permissions-list" class="border rounded" style="max-height: 400px; overflow-y: auto;">
+                        {{-- Permissions will be loaded here --}}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        ANNULER
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="btn-confirm-assign-permissions">
+                         ASSIGNER PLUSIEURS
                     </button>
                 </div>
             </form>

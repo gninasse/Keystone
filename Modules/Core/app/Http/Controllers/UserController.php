@@ -515,4 +515,72 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get available permissions for assignment
+     */
+    public function getAvailablePermissions($id)
+    {
+        try {
+            $user = User::findOrFail($id);
+            $assignedPermissionIds = $user->getAllPermissions()->pluck('id')->toArray();
+            
+            $availablePermissions = \Spatie\Permission\Models\Permission::whereNotIn('id', $assignedPermissionIds)
+                ->get()
+                ->groupBy('module')
+                ->map(function($permissions, $module) {
+                    return [
+                        'module' => $module ?: 'System',
+                        'permissions' => $permissions->map(function($permission) {
+                            return [
+                                'id' => $permission->id,
+                                'name' => $permission->name,
+                                'label' => $permission->label ?: $permission->name,
+                            ];
+                        })
+                    ];
+                })->values();
+
+            $modules = \Spatie\Permission\Models\Permission::distinct()->pluck('module')->filter()->values();
+
+            return response()->json([
+                'success' => true,
+                'permissions_by_module' => $availablePermissions,
+                'modules' => $modules
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Assign permissions to user
+     */
+    public function assignPermissions(Request $request, $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+            
+            $request->validate([
+                'permission_ids' => ['required', 'array'],
+                'permission_ids.*' => ['exists:permissions,id'],
+            ]);
+
+            $permissions = \Spatie\Permission\Models\Permission::whereIn('id', $request->permission_ids)->get();
+            $user->givePermissionTo($permissions);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Permissions assignées avec succès'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur : ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
