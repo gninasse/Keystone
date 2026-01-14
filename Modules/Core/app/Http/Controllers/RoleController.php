@@ -97,6 +97,14 @@ class RoleController extends Controller
     {
         try {
             $role = Role::findOrFail($id);
+
+            if ($role->name === 'super-admin') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Le rôle super-admin ne peut pas être modifié'
+                ], 403);
+            }
+
             $role->name = $request->name;
             $role->description = $request->description;
             $role->save();
@@ -121,6 +129,14 @@ class RoleController extends Controller
     {
         try {
             $role = Role::findOrFail($id);
+
+            if ($role->name === 'super-admin') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Le rôle super-admin ne peut pas être supprimé'
+                ], 403);
+            }
+
             $role->delete();
 
             return response()->json([
@@ -183,6 +199,13 @@ class RoleController extends Controller
     {
         try {
             $role = Role::findOrFail($id);
+            
+            if ($role->name === 'super-admin') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Les permissions du rôle super-admin ne peuvent pas être modifiées'
+                ], 403);
+            }
             
             $request->validate([
                 'permission_id' => 'required|exists:permissions,id',

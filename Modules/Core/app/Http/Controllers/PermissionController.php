@@ -60,6 +60,13 @@ class PermissionController extends Controller
             $role = Role::findById($request->role_id);
             $permission = Permission::findById($request->permission_id);
 
+            if ($role->name === 'super-admin') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Les permissions du rôle super-admin ne peuvent pas être modifiées'
+                ], 403);
+            }
+
             if ($request->attach) {
                 $role->givePermissionTo($permission);
                 $message = 'Permission accordée';
