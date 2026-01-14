@@ -12,13 +12,37 @@ class PermissionController extends Controller
     /**
      * Display the permissions matrix.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $roles = Role::orderBy('id')->get();
-        // Fetch permissions, perhaps ordered by ID or Name
-        $permissions = Permission::orderBy('id')->get();
+        // Get filters from query
+        $selectedRolesIds = $request->get('roles', []);
+        $selectedModules = $request->get('modules', []);
 
-        return view('core::permissions.index', compact('roles', 'permissions'));
+        // Default: 10 first roles and 'Core' module if nothing selected
+        if (empty($selectedRolesIds)) {
+            $selectedRolesIds = Role::orderBy('id')->limit(10)->pluck('id')->toArray();
+        }
+
+        if (empty($selectedModules)) {
+            $selectedModules = ['core'];
+        }
+
+        // Fetch data for the matrix
+        $roles = Role::whereIn('id', $selectedRolesIds)->orderBy('id')->get();
+        $permissions = Permission::whereIn('module', $selectedModules)->orderBy('id')->get();
+
+        // Fetch metadata for the configuration modal
+        $allRoles = Role::orderBy('name')->get();
+        $allModules = Permission::distinct()->pluck('module')->filter()->values()->toArray();
+
+        return view('core::permissions.index', compact(
+            'roles',
+            'permissions',
+            'allRoles',
+            'allModules',
+            'selectedRolesIds',
+            'selectedModules'
+        ));
     }
 
     /**
@@ -29,7 +53,7 @@ class PermissionController extends Controller
         $request->validate([
             'role_id' => 'required|exists:roles,id',
             'permission_id' => 'required|exists:permissions,id',
-            'attach' => 'required|boolean'
+            'attach' => 'required|boolean',
         ]);
 
         try {
@@ -46,12 +70,12 @@ class PermissionController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => $message
+                'message' => $message,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur : ' . $e->getMessage()
+                'message' => 'Erreur : '.$e->getMessage(),
             ], 500);
         }
     }
