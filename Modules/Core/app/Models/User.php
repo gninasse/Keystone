@@ -22,6 +22,7 @@ class User extends Authenticatable
         'service',
         'password',
         'is_active',
+        'avatar',
     ];
 
     protected $hidden = [
@@ -35,6 +36,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'avatar' => 'string',
         ];
     }
 
@@ -42,5 +44,14 @@ class User extends Authenticatable
     public function getFullNameAttribute(): string
     {
         return "{$this->name} {$this->last_name}";
+    }
+
+    public function getAvatarUrlAttribute(): string
+    {
+        if ($this->avatar && \Illuminate\Support\Facades\Storage::exists($this->avatar)) {
+             return \Illuminate\Support\Facades\Storage::url($this->avatar);
+        }
+
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->full_name) . '&color=7F9CF5&background=EBF4FF';
     }
 }

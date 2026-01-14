@@ -98,10 +98,15 @@ export class UserForm {
             const url = userId ? route('cores.users.update', userId) : route('cores.users.store');
             const method = userId ? 'PUT' : 'POST';
 
+            const formData = new FormData(this.$form[0]);
+            if (userId) formData.append('_method', 'PUT');
+
             $.ajax({
                 url: url,
-                method: method,
-                data: this.$form.serialize(),
+                method: 'POST', // Always POST for FormData with binary content, spoof method for Laravel
+                data: formData,
+                processData: false,
+                contentType: false,
                 beforeSend: () => {
                     $('#btn-save').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Enregistrement...');
                 },

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\Storage;
 use Modules\Core\Http\Requests\StoreUserRequest;
 use Modules\Core\Http\Requests\UpdateUserRequest;
 
@@ -65,15 +66,29 @@ class UserController extends Controller
     {
         try {
             $user = User::findOrFail($id);
-            return response()->json([
-                'success' => true,
-                'data' => $user
-            ]);
+            // If request expects JSON (modal edit check), return JSON
+            // But now we want a full page for details. 
+            // We can keep JSON for flexibility if header present, or just redirect?
+            // User requested "change button modify... opening a page details". 
+            // So we return a view.
+
+            if (request()->wantsJson()) {
+                 return response()->json([
+                    'success' => true,
+                    'data' => $user
+                ]);
+            }
+            
+            return view('core::users.show', compact('user'));
+
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Utilisateur non trouvé'
-            ], 404);
+            if (request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Utilisateur non trouvé'
+                ], 404);
+            }
+            abort(404);
         }
     }
 
@@ -85,6 +100,11 @@ class UserController extends Controller
         // Validation is handled by StoreUserRequest
 
         try {
+            $avatarPath = null;
+            if ($request->hasFile('avatar')) {
+                $avatarPath = $request->file('avatar')->store('avatars', 'public');
+            }
+
             $user = User::create([
                 'name' => $request->name,
                 'last_name' => $request->last_name,
@@ -92,6 +112,7 @@ class UserController extends Controller
                 'email' => $request->email,
                 'service' => $request->service,
                 'password' => Hash::make($request->password),
+                'avatar' => $avatarPath,
             ]);
 
             return response()->json([
@@ -122,6 +143,14 @@ class UserController extends Controller
             $user->user_name = $request->user_name;
             $user->email = $request->email;
             $user->service = $request->service;
+
+            if ($request->hasFile('avatar')) {
+                // Delete old avatar
+                if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                    Storage::disk('public')->delete($user->avatar);
+                }
+                $user->avatar = $request->file('avatar')->store('avatars', 'public');
+            }
 
             // Mettre à jour le mot de passe seulement s'il est fourni
             if ($request->filled('password')) {

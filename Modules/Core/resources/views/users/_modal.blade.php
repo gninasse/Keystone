@@ -6,11 +6,24 @@
                 <h5 class="modal-title" id="modalTitle">Ajouter un utilisateur</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="userForm">
+            <form id="userForm" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" id="user_id" name="user_id">
                 
                 <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-12 text-center">
+                            <div class="position-relative d-inline-block">
+                                <img id="avatar-preview" src="https://ui-avatars.com/api/?name=User&color=7F9CF5&background=EBF4FF" 
+                                     class="rounded-circle img-thumbnail" style="width: 120px; height: 120px; object-fit: cover;" alt="Avatar">
+                                <label for="avatar" class="position-absolute bottom-0 end-0 bg-primary text-white p-2 rounded-circle" style="cursor: pointer;">
+                                    <i class="fas fa-camera"></i>
+                                </label>
+                                <input type="file" id="avatar" name="avatar" class="d-none" accept="image/*">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">

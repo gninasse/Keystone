@@ -41,22 +41,7 @@ export class UserActions {
     }
 
     editUser(userId) {
-        $.ajax({
-            url: route('cores.users.show', userId),
-            method: 'GET',
-            success: (response) => {
-                if (response.success) {
-                    this.form.openForEdit(userId, response.data);
-                }
-            },
-            error: (xhr) => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erreur',
-                    text: 'Impossible de charger les données'
-                });
-            }
-        });
+        window.location.href = route('cores.users.show', userId);
     }
 
     deleteUser(userId) {

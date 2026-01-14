@@ -33,6 +33,7 @@ class UpdateUserRequest extends FormRequest
             ],
             'service' => 'nullable|string|max:255',
             'password' => ['nullable', 'confirmed', Password::min(8)->letters()->mixedCase()->numbers()->symbols()],
+            'avatar' => 'nullable|image|max:2048',
         ];
     }
 
