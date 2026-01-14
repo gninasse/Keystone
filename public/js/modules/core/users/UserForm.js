@@ -14,6 +14,7 @@ export class UserForm {
         this.initValidation();
         this.initSubmission();
         this.initPasswordToggle();
+        this.initImagePreview();
     }
 
     initValidation() {
@@ -56,6 +57,22 @@ export class UserForm {
             } else {
                 $input.attr('type', 'password');
                 $icon.removeClass('fa-eye-slash').addClass('fa-eye');
+            }
+        });
+    }
+
+    initImagePreview() {
+        $('#avatar').on('change', function (e) {
+            const file = e.target.files[0];
+
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    $('#avatar-preview').attr('src', e.target.result);
+                };
+
+                reader.readAsDataURL(file);
             }
         });
     }
@@ -214,5 +231,6 @@ export class UserForm {
     resetForm() {
         this.$form[0].reset();
         this.clearErrors();
+        $('#avatar-preview').attr('src', window.emptyAvatar);
     }
 }

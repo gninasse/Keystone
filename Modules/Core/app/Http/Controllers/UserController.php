@@ -101,8 +101,18 @@ class UserController extends Controller
 
         try {
             $avatarPath = null;
-            if ($request->hasFile('avatar')) {
-                $avatarPath = $request->file('avatar')->store('avatars', 'public');
+            if ($request->hasFile('avatar')) { 
+                $destinationPath = public_path('avatars');
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                } 
+
+                $avatar = $request->file('avatar');
+                $cleanUserName = str_replace(' ', '_', strtolower($request->user_name));
+                $avatarName = time() . '_' . $cleanUserName . '.' . $avatar->extension();
+                // dd($avatarName);
+                $avatar->move(public_path('avatars'), $avatarName);
+                $avatarPath = 'avatars/' . $avatarName;
             }
 
             $user = User::create([
@@ -145,11 +155,21 @@ class UserController extends Controller
             $user->service = $request->service;
 
             if ($request->hasFile('avatar')) {
-                // Delete old avatar
-                if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
-                    Storage::disk('public')->delete($user->avatar);
+                 if ($user->avatar && file_exists(public_path($user->avatar))) {
+                    unlink(public_path($user->avatar));
                 }
-                $user->avatar = $request->file('avatar')->store('avatars', 'public');
+
+                // Upload new avatar
+                $destinationPath = public_path('avatars');
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+
+                $avatar = $request->file('avatar');
+                $cleanUserName = str_replace(' ', '_', strtolower($request->user_name));
+                $avatarName = time() . '_' . $cleanUserName . '.' . $avatar->extension();
+                $avatar->move($destinationPath, $avatarName);
+                $user->avatar = 'avatars/' . $avatarName;
             }
 
             // Mettre à jour le mot de passe seulement s'il est fourni
@@ -170,6 +190,8 @@ class UserController extends Controller
                 'message' => 'Erreur lors de la modification : ' . $e->getMessage()
             ], 500);
         }
+        
+        
     }
 
     /**
@@ -248,6 +270,243 @@ class UserController extends Controller
                 'success' => true,
                 'message' => "Utilisateur $status avec succès",
                 'is_active' => $user->is_active
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Mettre à jour le profil utilisateur (AJAX)
+     */
+    public function updateProfile(Request $request, $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+
+            $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'last_name' => ['required', 'string', 'max:255'],
+                'user_name' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
+                'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
+                'service' => ['nullable', 'string', 'max:255'],
+            ]);
+
+            $user->update([
+                'name' => $request->name,
+                'last_name' => $request->last_name,
+                'user_name' => $request->user_name,
+                'email' => $request->email,
+                'service' => $request->service,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profil mis à jour avec succès',
+                'data' => $user
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur de validation',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Mettre à jour l'avatar utilisateur (AJAX)
+     */
+    public function updateAvatar(Request $request, $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+
+            $request->validate([
+                'avatar' => ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+            ]);
+
+            if ($request->hasFile('avatar')) {
+                // Delete old avatar if exists
+                if ($user->avatar && file_exists(public_path($user->avatar))) {
+                    unlink(public_path($user->avatar));
+                }
+
+                // Upload new avatar
+                $destinationPath = public_path('avatars');
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+
+                $avatar = $request->file('avatar');
+                $cleanUserName = str_replace(' ', '_', strtolower($user->user_name));
+                $avatarName = time() . '_' . $cleanUserName . '.' . $avatar->extension();
+                $avatar->move($destinationPath, $avatarName);
+                $user->avatar = 'avatars/' . $avatarName;
+                $user->save();
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Avatar mis à jour avec succès',
+                'avatar_url' => $user->avatar_url
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur de validation',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get available roles for assignment
+     */
+    public function getAvailableRoles($id)
+    {
+        try {
+            $user = User::findOrFail($id);
+            $assignedRoleIds = $user->roles->pluck('id')->toArray();
+            
+            $availableRoles = \Spatie\Permission\Models\Role::whereNotIn('id', $assignedRoleIds)
+                ->get()
+                ->map(function($role) {
+                    return [
+                        'id' => $role->id,
+                        'name' => $role->name,
+                        'description' => $role->description ?? 'No description available',
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'roles' => $availableRoles
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Assign a role to user
+     */
+    public function assignRole(Request $request, $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+            
+            $request->validate([
+                'role_id' => ['required', 'exists:roles,id'],
+            ]);
+
+            $role = \Spatie\Permission\Models\Role::findOrFail($request->role_id);
+            
+            // Check if user already has this role
+            if ($user->hasRole($role)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'L\'utilisateur a déjà ce rôle'
+                ], 422);
+            }
+
+            $user->assignRole($role);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Rôle assigné avec succès',
+                'role' => [
+                    'id' => $role->id,
+                    'name' => $role->name,
+                    'description' => $role->description,
+                    'created_at' => now()->format('M d, Y')
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove a role from user
+     */
+    public function removeRole(Request $request, $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+            
+            $request->validate([
+                'role_id' => ['required', 'exists:roles,id'],
+            ]);
+
+            $role = \Spatie\Permission\Models\Role::findOrFail($request->role_id);
+            
+            if (!$user->hasRole($role)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'L\'utilisateur n\'a pas ce rôle'
+                ], 422);
+            }
+
+            $user->removeRole($role);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Rôle retiré avec succès'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove a direct permission from user
+     */
+    public function removePermission(Request $request, $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+            
+            $request->validate([
+                'permission_id' => ['required', 'exists:permissions,id'],
+            ]);
+
+            $permission = \Spatie\Permission\Models\Permission::findOrFail($request->permission_id);
+            
+            if (!$user->hasDirectPermission($permission)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'L\'utilisateur n\'a pas cette permission en direct'
+                ], 422);
+            }
+
+            $user->revokePermissionTo($permission);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Permission retirée avec succès'
             ]);
         } catch (\Exception $e) {
             return response()->json([

@@ -178,8 +178,7 @@
     <!--end::OverlayScrollbars Configure-->
     
     <!--begin::Ziggy Routes-->
-    <script src="{{ asset('plugins/ziggy/routes.js') }}"></script>
-    <script src="{{ asset('plugins/ziggy/ziggy.js') }}"></script>
+    @routes
     <!--end::Ziggy Routes-->
     
     @stack('js')

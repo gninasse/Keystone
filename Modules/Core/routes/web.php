@@ -26,8 +26,15 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/{id}', [UserController::class, 'update'])->name('update');
             Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
             Route::post('/{id}/reset-password', [UserController::class, 'resetPassword'])->name('reset-password');
-            Route::post('/{id}/reset-password', [UserController::class, 'resetPassword'])->name('reset-password');
             Route::post('/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('toggle-status');
+            Route::put('/{id}/profile', [UserController::class, 'updateProfile'])->name('update-profile');
+            Route::post('/{id}/avatar', [UserController::class, 'updateAvatar'])->name('update-avatar');
+            
+            // Gestion des rôles via AJAX sur la page show
+            Route::get('/{id}/roles/available', [UserController::class, 'getAvailableRoles'])->name('available-roles');
+            Route::post('/{id}/roles', [UserController::class, 'assignRole'])->name('assign-role');
+            Route::delete('/{id}/roles', [UserController::class, 'removeRole'])->name('remove-role');
+            Route::delete('/{id}/permissions', [UserController::class, 'removePermission'])->name('remove-permission');
         });
 
         // Routes pour la gestion des rôles
