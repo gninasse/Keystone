@@ -29,7 +29,7 @@ class AuthController extends Controller
 
         $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'user_name';
 
-        if (Auth::attempt([$field => $login, 'password' => $password], $request->boolean('remember'))) {
+        if (Auth::attempt([$field => $login, 'password' => $password, 'is_active' => true], true)) {
             $request->session()->regenerate();
             return redirect()->intended(route('cores.dashboard'));
         }

@@ -28,4 +28,8 @@ return [
     'cores.modules.enable' => 'Activer un module',
     'cores.modules.disable' => 'Désactiver un module',
     'cores.modules.configure' => 'Configurer un module',
+// Gestion des activités
+'cores.activities.view' => 'Voir l\'historique des activités',
+'cores.activities.export' => 'Exporter l\'historique',
+'cores.activities.cleanup' => 'Nettoyer les anciennes activités'
 ];

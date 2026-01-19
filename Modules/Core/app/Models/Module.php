@@ -7,10 +7,29 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes; 
 use Spatie\Permission\Models\Permission;
+use Modules\Core\Traits\LogsActivityWithModule;
 
 class Module extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, LogsActivityWithModule{
+        tapActivity as tapActivityLogsActivityWithModule;
+    }
+ 
+
+    protected static $activityModule = 'core';
+
+    protected static $recordEvents = ['created', 'updated', 'deleted'];
+
+      // Attributs sensibles à logger
+    protected static $logAttributes = [
+        'name', 'slug', 'is_active', 'is_required', 
+        'dependencies', 'version'
+    ];
+
+    protected static $logOnlyDirty = true;
+
+  
+
 
     protected $fillable = [
         'name',
@@ -125,5 +144,15 @@ class Module extends Model
             ->whereIn('permission_id', $permissions)
             ->distinct('model_id')
             ->count();
+    }
+
+    // Surcharge de la méthode tapActivity pour ajouter des informations contextuelles 
+      public function tapActivity($activity, string $eventName)
+    { 
+        // Ajouter des informations contextuelles
+        $this->tapActivityLogsActivityWithModule($activity, $eventName);
+        if ($eventName === 'updated' && $this->wasChanged('is_active')) {
+            $activity->description = $this->is_active ? 'module_activated' : 'module_deactivated';
+        }
     }
 }

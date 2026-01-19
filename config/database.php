@@ -97,6 +97,20 @@ return [
             'search_path' => 'public',
             'sslmode' => 'prefer',
         ],
+        'pgsql_activitylog' => [
+            'driver' => 'pgsql',
+            'url' => env('DB_URL'),
+            'host' => env('ACTIVITY_LOGGER_DB_HOST', '127.0.0.1'),
+            'port' => env('ACTIVITY_LOGGER_DB_PORT', '5432'),
+            'database' => env('ACTIVITY_LOGGER_DB_DATABASE', 'laravel'),
+            'username' => env('ACTIVITY_LOGGER_DB_USERNAME', 'root'),
+            'password' => env('ACTIVITY_LOGGER_DB_PASSWORD', ''),
+            'charset' => env('ACTIVITY_LOGGER_DB_CHARSET', 'utf8'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => 'prefer',
+        ],
 
         'sqlsrv' => [
             'driver' => 'sqlsrv',

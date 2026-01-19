@@ -31,6 +31,7 @@ class CoreServiceProvider extends ServiceProvider
             \Modules\Core\Console\Commands\SyncModulesCommand::class,
             \Modules\Core\Console\Commands\SyncPermissionsCommand::class,
             \Modules\Core\Console\Commands\UserPermissionsCommand::class,
+            \Modules\Core\Console\Commands\CleanupExpiredActivitiesCommand::class,
         ]);
     }
 
@@ -133,7 +134,7 @@ class CoreServiceProvider extends ServiceProvider
 
         // Empêcher la modification des rôles système
         Gate::define('edit-system-role', function ($user, $role) {
-            if (in_array($role->name, ['super-admin', 'admin'])) {
+            if (in_array($role->name, ['super-admin'])) {
                 return $user->hasRole('super-admin');
             }
             return true;

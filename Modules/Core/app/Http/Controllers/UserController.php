@@ -427,6 +427,7 @@ class UserController extends Controller
             }
 
             $user->assignRole($role);
+            $user->logRoleToggle($role->name, 'assigned');
 
             return response()->json([
                 'success' => true,
@@ -468,6 +469,7 @@ class UserController extends Controller
             }
 
             $user->removeRole($role);
+            $user->logRoleToggle($role->name, 'removed');
 
             return response()->json([
                 'success' => true,
@@ -503,6 +505,7 @@ class UserController extends Controller
             }
 
             $user->revokePermissionTo($permission);
+            $user->logPermissionToggle($permission->name, 'revoked');
 
             return response()->json([
                 'success' => true,
@@ -571,6 +574,7 @@ class UserController extends Controller
 
             $permissions = \Spatie\Permission\Models\Permission::whereIn('id', $request->permission_ids)->get();
             $user->givePermissionTo($permissions);
+            $user->logPermissionToggle($permissions, 'given');
 
             return response()->json([
                 'success' => true,

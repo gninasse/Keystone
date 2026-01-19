@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\Core\Http\Requests\StoreRoleRequest;
 use Modules\Core\Http\Requests\UpdateRoleRequest;
-use Spatie\Permission\Models\Role;
+use Modules\Core\Models\Role;
 
 class RoleController extends Controller
 {
@@ -215,9 +215,11 @@ class RoleController extends Controller
 
             if ($role->hasPermissionTo($permission->name)) {
                 $role->revokePermissionTo($permission->name);
+                $role->logPermissionToggle($permission->name, 'revoked');
                 $message = 'Permission révoquée avec succès';
             } else {
                 $role->givePermissionTo($permission->name);
+                $role->logPermissionToggle($permission->name, 'given');
                 $message = 'Permission assignée avec succès';
             }
 
