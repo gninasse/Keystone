@@ -13,7 +13,7 @@ class ResetUserPassword extends Command
      *
      * @var string
      */
-    protected $signature = 'core:users-reset-password {user_name : Le nom d\'utilisateur}';
+    protected $signature = 'cores:reset-user-password {user_name : Le nom d\'utilisateur}';
 
     /**
      * The console command description.
@@ -25,19 +25,20 @@ class ResetUserPassword extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
         $userName = $this->argument('user_name');
-        
+
         $user = User::where('user_name', $userName)->first();
 
-        if (!$user) {
+        if (! $user) {
             $this->error("Utilisateur avec le nom d'utilisateur '{$userName}' introuvable.");
+
             return 1;
         }
 
         $defaultPassword = config('core.user_default_password', 'password');
-        
+
         $user->password = Hash::make($defaultPassword);
         $user->save();
 
